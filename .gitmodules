@@ -1,3 +1,3 @@
-[submodule "latex"]
-	path = latex
+[submodule "Latex"]
+	path = Latex
 	url = https://git.overleaf.com/5d8bc368e59ea2000171c6c1
