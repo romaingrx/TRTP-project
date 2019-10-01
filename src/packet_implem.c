@@ -41,7 +41,10 @@ void pkt_del(pkt_t *pkt)
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 {
-    /* Your code will be inserted here */
+    /* Vérifie la validité du packet */
+    if(!len){return E_UNCONSISTENT;} // 0 bit reçu
+    if(len < 4){return E_NOHEADER;} // < 32 bits reçu, header incorrect
+
 }
 
 pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
@@ -97,27 +100,36 @@ const char* pkt_get_payload(const pkt_t* pkt)
 
 pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 {
-    /* Your code will be inserted here */
+  if(type!=PTYPE_DATA && type!=PTYPE_ACK && type!=PTYPE_NACK){return E_TYPE;} //Non cohérent dans le type
+  pkt->TYPE = type;
+  return PKT_OK;
 }
 
 pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 {
-    /* Your code will be inserted here */
+    if(pkt->TYPE!=PTYPE_DATA && tr!=0){return E_TR;} //Pas encore sûr
+    pkt->TR = tr;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
 {
-    /* Your code will be inserted here */
+    if(window>MAX_WINDOW_SIZE){return E_WINDOW;} //window trop grand
+    pkt->WINDOW = window;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
 {
-    /* Your code will be inserted here */
+    pkt->SEQNUM = sequm;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
 {
-    /* Your code will be inserted here */
+    if(length>MAX_PAYLOAD_SIZE){return E_LENGTH;}
+    pkt->LENGTH = length;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_timestamp(pkt_t *pkt, const uint32_t timestamp)

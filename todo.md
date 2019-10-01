@@ -10,7 +10,7 @@ TODO
 =================
 #### packet_implem.c ####
 - [x] ```pkt_t* pkt_new()```
-- [ ] ```void pkt_del(pkt_t*)```
+- [x] ```void pkt_del(pkt_t*)```
 - [ ] ```pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)```
 - [ ] ```pkt_status_code pkt_encode(const pkt_t*, char *buf, size_t *len)```
 - [ ] ```const char* pkt_get_payload(const pkt_t*)```
@@ -22,6 +22,27 @@ TODO
 - [ ] ```size_t varuint_len(const uint8_t *data)```
 - [ ] ```ssize_t varuint_predict_len(uint16_t val)```
 - [ ] ```ssize_t predict_header_length(const pkt_t *pkt)```
+- [ ] **Setters**
+  - [x] ```pkt_status_code pkt_set_type     (pkt_t*, const ptypes_t type)```
+  - [ ] ```pkt_status_code pkt_set_tr       (pkt_t*, const uint8_t tr)```
+    - Dans quel cas c'est une erreur entre TR et TYPE
+  - [x] ```pkt_status_code pkt_set_window   (pkt_t*, const uint8_t window)```
+  - [x] ```pkt_status_code pkt_set_seqnum   (pkt_t*, const uint8_t seqnum)```
+  - [x] ```pkt_status_code pkt_set_length   (pkt_t*, const uint16_t length)```
+  - [ ] ```pkt_status_code pkt_set_timestamp(pkt_t*, const uint32_t timestamp)```
+  - [ ] ```pkt_status_code pkt_set_crc1     (pkt_t*, const uint32_t crc1)```
+  - [ ] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
+  - [ ] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
+- [ ] **Getters**
+  - [ ] ```ptypes_t pkt_get_type (const pkt_t*)```
+  - [ ] ```uint8_t  pkt_get_tr (const pkt_t*)```
+  - [ ] ```uint8_t  pkt_get_window (const pkt_t*)```
+  - [ ] ```uint8_t  pkt_get_seqnum (const pkt_t*)```
+  - [ ] ```uint16_t pkt_get_length (const pkt_t*)```
+  - [ ] ```uint32_t pkt_get_timestamp (const pkt_t*)```
+  - [ ] ```uint32_t pkt_get_crc1 (const pkt_t*)```
+  - [ ] ```const char* pkt_get_payload (const pkt_t*)```
+  - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
 
 Improvements
 =================
