@@ -3,6 +3,7 @@
 /* Extra #includes */
 /* Your code will be inserted here */
 
+/* Package structure */
 struct __attribute__((__packed__)) pkt {
     unsigned int TYPE : 2;
     unsigned int TR : 1;
@@ -16,7 +17,6 @@ struct __attribute__((__packed__)) pkt {
     uint32_t CRC2;
 };
 
-/* Generate a new pkt */
 pkt_t* pkt_new()
 {
     pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
@@ -24,6 +24,13 @@ pkt_t* pkt_new()
       perror("Erreur lors du malloc du package");
       return NULL;
     }
+    pkt->TYPE = 1;
+    pkt->TR = 0;
+    pkt->WINDOW = 0;
+    pkt->LENGTH = htons(0);
+    pkt->TIMESTAMP = 0;
+    pkt->CRC1 = 0;
+    return pkt
 }
 
 void pkt_del(pkt_t *pkt)
