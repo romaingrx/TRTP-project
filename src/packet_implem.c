@@ -35,7 +35,8 @@ pkt_t* pkt_new()
 
 void pkt_del(pkt_t *pkt)
 {
-    /* Your code will be inserted here */
+    free(pkt->PAYLOAD);
+    free(pkt);
 }
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)

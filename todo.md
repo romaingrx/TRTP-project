@@ -15,9 +15,7 @@ TODO
 - [ ] ```pkt_status_code pkt_encode(const pkt_t*, char *buf, size_t *len)```
 - [ ] ```const char* pkt_get_payload(const pkt_t*)```
 - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
-- [ ] ```pkt_status_code pkt_set_payload(pkt_t*,
-                                const char *data,
-                                const uint16_t length)```
+- [ ] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
 - [ ] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
 - [ ] ```ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)```
 - [ ] ```ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)```
