@@ -207,19 +207,19 @@ ssize_t predict_header_length(const pkt_t *pkt)
     /* Your code will be inserted here */
 }
 
-uint8_t binary_get_type(uint8_t first_byte){
+uint8_t binary_decode_type(uint8_t first_byte){
   uint8_t decoder = 0b11000000;
   uint8_t good_bits = (decoder & first_byte);
   return good_bits >> 6;
 }
 
-uint8_t binary_get_tr(uint8_t first_byte){
+uint8_t binary_decode_tr(uint8_t first_byte){
   uint8_t decoder = 0b00100000;
   uint8_t good_bits = decoder & first_byte;
   return good_bits >> 5;
 }
 
-uint8_t binary_get_window(uint8_t first_byte){
+uint8_t binary_decode_window(uint8_t first_byte){
   uint8_t decoder = 0b00011111;
   uint8_t good_bits = decoder & first_byte;
   return good_bits >> 0;

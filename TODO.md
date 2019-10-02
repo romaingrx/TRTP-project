@@ -48,11 +48,11 @@ TODO
   - [x] ```const char* pkt_get_payload (const pkt_t*)```
   - [x] ```uint32_t pkt_get_crc2(const pkt_t*)```
   </details>
-  <details><summary>Binary getters</summary>
+  <details><summary>Binary decoders</summary>
 
-  - [x] uint8_t binary_get_type(uint8_t first_byte);
-  - [x] uint8_t binary_get_tr(uint8_t first_byte)
-  - [x] uint8_t binary_get_window(uint8_t first_byte)
+  - [x] uint8_t binary_decode_type(uint8_t first_byte);
+  - [x] uint8_t binary_decode_tr(uint8_t first_byte)
+  - [x] uint8_t binary_decode_window(uint8_t first_byte)
   </details>
 </details>
 
