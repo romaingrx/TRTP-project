@@ -1,19 +1,23 @@
 Objectifs
 =================
-- Aucune fuite de mémoire
+- Aucune fuite de memoire
 - Selective repeat
-- Troncation de donnée
+- Troncation de donnee
 - IPv6
 
 
 TODO
 =================
 
+Progs
+-----------------
+
 <details><summary>packet_implem.c</summary>
 
 - [x] ```pkt_t* pkt_new()```
 - [x] ```void pkt_del(pkt_t*)```
 - [ ] ```pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)```
+  - Comment prendre en compte LENGTH coder sur 7 ou 15 bits en fonction de L
 - [ ] ```pkt_status_code pkt_encode(const pkt_t*, char *buf, size_t *len)```
 - [ ] ```const char* pkt_get_payload(const pkt_t*)```
 - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
@@ -55,6 +59,15 @@ TODO
   - [x] uint8_t binary_decode_window(uint8_t first_byte)
   </details>
 </details>
+
+IncomprÃ©hension
+-----------------
+- ##### L & LENGTH #####
+  L'utilitÃ© de L puisqu'on l'encodera d'office sur un uint16_t
+
+Erreurs possibles
+=================
+- L qui n'est pas en network-byte order 
 
 Improvements
 =================

@@ -1,4 +1,10 @@
 #include "packet_interface.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
+#include <zlib.h>
+#include <arpa/inet.h>
 
 /* Extra #includes */
 /* Your code will be inserted here */
@@ -8,9 +14,9 @@ struct __attribute__((__packed__)) pkt {
     unsigned int TYPE : 2;
     unsigned int TR : 1;
     unsigned int WINDOW : 5;
+    uint8_t SEQNUM;
     unsigned int L : 1;
     uint16_t LENGTH;
-    uint8_t SEQNUM;
     uint32_t TIMESTAMP;
     uint32_t CRC1;
     char * PAYLOAD;
@@ -24,13 +30,13 @@ pkt_t* pkt_new()
       perror("Erreur lors du malloc du package");
       return NULL;
     }
-    pkt->TYPE = 1;
+    pkt->TYPE = 0;
     pkt->TR = 0;
     pkt->WINDOW = 0;
     pkt->LENGTH = htons(0);
     pkt->TIMESTAMP = 0;
     pkt->CRC1 = 0;
-    return pkt
+    return pkt;
 }
 
 void pkt_del(pkt_t *pkt)
@@ -41,26 +47,39 @@ void pkt_del(pkt_t *pkt)
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 {
-    pkt_status_code current_status;
+    pkt_status_code status;
     /* Vérifie la validité du packet */
     if(!len){return E_UNCONSISTENT;} // 0 bit reçu
     if(len < 4){return E_NOHEADER;} // < 32 bits reçu, header incorrect
 
-    /* DECODE LE MESSAGE */
-      memcopy(pkt, (void*)data, 1); // Copy le premier byte
+    /* DECODE LE HEADER */
+      uint8_t first_byte = data[0];
+      uint16_t length_bytes = ntohs(*((uint16_t *)(data + 2)));
+
+      /* TYPE */
+      unsigned int TYPE = binary_decode_type(first_byte);
+      if((status = pkt_set_type(pkt, TYPE)) != PKT_OK){return status;}
+
+      /* TR */
+      unsigned int TR = binary_decode_tr(first_byte);
+      if((status = pkt_set_tr(pkt, TR)) != PKT_OK){return status;}
+
+      /* WINDOW */
+      unsigned int WINDOW = binary_decode_window(first_byte);
+      if((status = pkt_set_window(pkt, WINDOW)) != PKT_OK){return status;}
+
       /* SEQNUM */
-      uint8_t SEQNUM = data[3];
-      current_status = pkt_set_seqnum(pkt, SEQNUM);
-      if(current_status != PKT_OK){return current_status;}
+      uint8_t SEQNUM = data[1];
+      if((status = pkt_set_seqnum(pkt, SEQNUM)) != PKT_OK){return status;}
 
 
-
+      return PKT_OK;
 }
 
-pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
-{
-    /* Your code will be inserted here */
-}
+// pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
+// {
+//    /* Your code will be inserted here */
+// }
 
 ptypes_t pkt_get_type  (const pkt_t* pkt)
 {
@@ -137,7 +156,7 @@ pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
 
 pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
 {
-    pkt->SEQNUM = sequm;
+    pkt->SEQNUM = seqnum;
     return PKT_OK;
 }
 
@@ -171,41 +190,41 @@ pkt_status_code pkt_set_payload(pkt_t *pkt,
                                 const uint16_t length)
 {
     pkt_status_code pkt_return = pkt_set_length(pkt, length); //pkt_get_length(pkt) == length
-    if(pkt_get_payload == NULL){free(pkt->PAYLOAD);}
+    if(pkt_get_payload(pkt) == NULL){free(pkt->PAYLOAD);}
     if(pkt_return != PKT_OK){return pkt_return;}
     pkt->PAYLOAD = (char*) malloc(length);
-    memcopy(pkt->PAYLOAD, data, length);
+    memcpy(pkt->PAYLOAD, data, length);
     return PKT_OK;
 }
 
 
-ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
-{
-    /* Your code will be inserted here */
-}
-
-
-ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
-{
-    /* Your code will be inserted here */
-}
-
-size_t varuint_len(const uint8_t *data)
-{
-    /* Your code will be inserted here */
-}
-
-
-ssize_t varuint_predict_len(uint16_t val)
-{
-    /* Your code will be inserted here */
-}
-
-
-ssize_t predict_header_length(const pkt_t *pkt)
-{
-    /* Your code will be inserted here */
-}
+// ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
+// {
+//     /* Your code will be inserted here */
+// }
+//
+//
+// ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
+// {
+//     /* Your code will be inserted here */
+// }
+//
+// size_t varuint_len(const uint8_t *data)
+// {
+//     /* Your code will be inserted here */
+// }
+//
+//
+// ssize_t varuint_predict_len(uint16_t val)
+// {
+//     /* Your code will be inserted here */
+// }
+//
+//
+// ssize_t predict_header_length(const pkt_t *pkt)
+// {
+//     /* Your code will be inserted here */
+// }
 
 uint8_t binary_decode_type(uint8_t first_byte){
   uint8_t decoder = 0b11000000;
@@ -215,12 +234,24 @@ uint8_t binary_decode_type(uint8_t first_byte){
 
 uint8_t binary_decode_tr(uint8_t first_byte){
   uint8_t decoder = 0b00100000;
-  uint8_t good_bits = decoder & first_byte;
-  return good_bits >> 5;
+  uint8_t good_bit = decoder & first_byte;
+  return good_bit >> 5;
 }
 
 uint8_t binary_decode_window(uint8_t first_byte){
   uint8_t decoder = 0b00011111;
   uint8_t good_bits = decoder & first_byte;
   return good_bits >> 0;
+}
+
+uint8_t binary_decode_l(uint16_t length_bytes){
+  uint16_t decoder = 0b1000000000000000;
+  uint16_t good_bit = decoder & length_bytes;
+  return (uint8_t) (good_bit >> 15);
+}
+
+uint16_t binary_decode_length(uint16_t length_bytes){
+  uint16_t decoder = 0b0111111111111111;
+  uint16_t good_bits = decoder & length_bytes;
+  return good_bits;
 }
