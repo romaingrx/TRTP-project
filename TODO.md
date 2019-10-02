@@ -33,7 +33,7 @@ TODO
   - [x] ```pkt_status_code pkt_set_length   (pkt_t*, const uint16_t length)```
   - [x] ```pkt_status_code pkt_set_timestamp(pkt_t*, const uint32_t timestamp)```
   - [x] ```pkt_status_code pkt_set_crc1     (pkt_t*, const uint32_t crc1)```
-  - [ ] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
+  - [x] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
   - [x] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
   </details>
   <details><summary>Getters</summary>
@@ -42,11 +42,11 @@ TODO
   - [x] ```uint8_t  pkt_get_tr (const pkt_t*)```
   - [x] ```uint8_t  pkt_get_window (const pkt_t*)```
   - [x] ```uint8_t  pkt_get_seqnum (const pkt_t*)```
-  - [ ] ```uint16_t pkt_get_length (const pkt_t*)```
-  - [ ] ```uint32_t pkt_get_timestamp (const pkt_t*)```
-  - [ ] ```uint32_t pkt_get_crc1 (const pkt_t*)```
-  - [ ] ```const char* pkt_get_payload (const pkt_t*)```
-  - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
+  - [x] ```uint16_t pkt_get_length (const pkt_t*)```
+  - [x] ```uint32_t pkt_get_timestamp (const pkt_t*)```
+  - [x] ```uint32_t pkt_get_crc1 (const pkt_t*)```
+  - [x] ```const char* pkt_get_payload (const pkt_t*)```
+  - [x] ```uint32_t pkt_get_crc2(const pkt_t*)```
   </details>
 </details>
 

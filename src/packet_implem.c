@@ -80,22 +80,24 @@ uint16_t pkt_get_length(const pkt_t* pkt)
 
 uint32_t pkt_get_timestamp   (const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return pkt->TIMESTAMP;
 }
 
 uint32_t pkt_get_crc1   (const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return ntohl(pkt->CRC1);
 }
 
 uint32_t pkt_get_crc2   (const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+  if(pkt_get_tr(pkt)==0 && pkt_get_length(pkt)!=0){return ntohl(pkt->CRC2);}
+  return 0;
 }
 
 const char* pkt_get_payload(const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    if(pkt_get_length(pkt)!=0){return pkt->PAYLOAD;}
+    return NULL;
 }
 
 
@@ -109,7 +111,7 @@ pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 {
     if(pkt->TYPE == PTYPE_DATA){
-      if(tr<0 || tr>1){return E_TR;}
+      if(tr>1){return E_TR;}
       pkt->TR = tr;
       return PKT_OK;
     }
@@ -158,8 +160,12 @@ pkt_status_code pkt_set_payload(pkt_t *pkt,
                                 const char *data,
                                 const uint16_t length)
 {
-    pkt_status_code pkt_return = pkt_set_length(pkt, length)
+    pkt_status_code pkt_return = pkt_set_length(pkt, length); //pkt_get_length(pkt) == length
+    if(pkt_get_payload == NULL){free(pkt->PAYLOAD);}
     if(pkt_return != PKT_OK){return pkt_return;}
+    pkt->PAYLOAD = (char*) malloc(length);
+    memcopy(pkt->PAYLOAD, data, length);
+    return PKT_OK;
 }
 
 
