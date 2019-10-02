@@ -173,5 +173,22 @@ ssize_t varuint_predict_len(uint16_t val);
  */
 ssize_t predict_header_length(const pkt_t *pkt);
 
+/*
+ * Retourne la valeur de TYPE contenu dans le premier byte du message.
+ */
+uint8_t binary_get_type(uint8_t first_byte);
+
+/*
+ * Retourne la valeur de TR contenu dans le premier byte du message.
+ */
+uint8_t binary_get_tr(uint8_t first_byte);
+
+/*
+ * Retourne la valeur de WINDOW contenu dans le premier byte du message.
+ */
+uint8_t binary_get_window(uint8_t first_byte);
+
+
+
 
 #endif  /* __PACKET_INTERFACE_H_ */

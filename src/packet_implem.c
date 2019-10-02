@@ -9,7 +9,7 @@ struct __attribute__((__packed__)) pkt {
     unsigned int TR : 1;
     unsigned int WINDOW : 5;
     unsigned int L : 1;
-    unsigned int LENGTH;
+    uint16_t LENGTH;
     uint8_t SEQNUM;
     uint32_t TIMESTAMP;
     uint32_t CRC1;
@@ -41,9 +41,19 @@ void pkt_del(pkt_t *pkt)
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 {
+    pkt_status_code current_status;
     /* Vérifie la validité du packet */
     if(!len){return E_UNCONSISTENT;} // 0 bit reçu
     if(len < 4){return E_NOHEADER;} // < 32 bits reçu, header incorrect
+
+    /* DECODE LE MESSAGE */
+      memcopy(pkt, (void*)data, 1); // Copy le premier byte
+      /* SEQNUM */
+      uint8_t SEQNUM = data[3];
+      current_status = pkt_set_seqnum(pkt, SEQNUM);
+      if(current_status != PKT_OK){return current_status;}
+
+
 
 }
 
@@ -195,4 +205,22 @@ ssize_t varuint_predict_len(uint16_t val)
 ssize_t predict_header_length(const pkt_t *pkt)
 {
     /* Your code will be inserted here */
+}
+
+uint8_t binary_get_type(uint8_t first_byte){
+  uint8_t decoder = 0b11000000;
+  uint8_t good_bits = (decoder & first_byte);
+  return good_bits >> 6;
+}
+
+uint8_t binary_get_tr(uint8_t first_byte){
+  uint8_t decoder = 0b00100000;
+  uint8_t good_bits = decoder & first_byte;
+  return good_bits >> 5;
+}
+
+uint8_t binary_get_window(uint8_t first_byte){
+  uint8_t decoder = 0b00011111;
+  uint8_t good_bits = decoder & first_byte;
+  return good_bits >> 0;
 }

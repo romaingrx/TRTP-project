@@ -1,8 +1,8 @@
 Objectifs
 =================
-- Aucune fuite de mÃ©moire
+- Aucune fuite de mémoire
 - Selective repeat
-- Troncation de donnÃ©ee
+- Troncation de donnée
 - IPv6
 
 
@@ -47,6 +47,12 @@ TODO
   - [x] ```uint32_t pkt_get_crc1 (const pkt_t*)```
   - [x] ```const char* pkt_get_payload (const pkt_t*)```
   - [x] ```uint32_t pkt_get_crc2(const pkt_t*)```
+  </details>
+  <details><summary>Binary getters</summary>
+
+  - [x] uint8_t binary_get_type(uint8_t first_byte);
+  - [x] uint8_t binary_get_tr(uint8_t first_byte)
+  - [x] uint8_t binary_get_window(uint8_t first_byte)
   </details>
 </details>
 
