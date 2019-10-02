@@ -54,27 +54,28 @@ pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
 
 ptypes_t pkt_get_type  (const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return pkt->TYPE;
 }
 
 uint8_t  pkt_get_tr(const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return pkt->TR;
 }
 
 uint8_t  pkt_get_window(const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return pkt->WINDOW;
 }
 
 uint8_t  pkt_get_seqnum(const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    return pkt->SEQNUM;
 }
 
 uint16_t pkt_get_length(const pkt_t* pkt)
 {
-    /* Your code will be inserted here */
+    if(pkt->TR == 0){return ntohs(pkt->LENGTH);}
+    return 0;
 }
 
 uint32_t pkt_get_timestamp   (const pkt_t* pkt)
@@ -107,9 +108,12 @@ pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 
 pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 {
-    if(pkt->TYPE!=PTYPE_DATA && tr!=0){return E_TR;} //Pas encore sûr
-    pkt->TR = tr;
-    return PKT_OK;
+    if(pkt->TYPE == PTYPE_DATA){
+      if(tr<0 || tr>1){return E_TR;}
+      pkt->TR = tr;
+      return PKT_OK;
+    }
+    return E_TR;
 }
 
 pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
@@ -134,24 +138,28 @@ pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
 
 pkt_status_code pkt_set_timestamp(pkt_t *pkt, const uint32_t timestamp)
 {
-    /* Your code will be inserted here */
+    pkt->TIMESTAMP = timestamp;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_crc1(pkt_t *pkt, const uint32_t crc1)
 {
-    /* Your code will be inserted here */
+    pkt->CRC1 = htonl(crc1);
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_crc2(pkt_t *pkt, const uint32_t crc2)
 {
-    /* Your code will be inserted here */
+  pkt->CRC2 = htonl(crc2);
+  return PKT_OK;
 }
 
 pkt_status_code pkt_set_payload(pkt_t *pkt,
                                 const char *data,
                                 const uint16_t length)
 {
-    /* Your code will be inserted here */
+    pkt_status_code pkt_return = pkt_set_length(pkt, length)
+    if(pkt_return != PKT_OK){return pkt_return;}
 }
 
 
