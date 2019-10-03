@@ -8,6 +8,20 @@
 /* Raccourci pour struct pkt */
 typedef struct pkt pkt_t;
 
+/* Package structure */
+struct __attribute__((__packed__)) pkt {
+    unsigned int TYPE : 2;
+    unsigned int TR : 1;
+    unsigned int WINDOW : 5;
+    uint8_t SEQNUM;
+    unsigned int L : 1;
+    uint16_t LENGTH;
+    uint32_t TIMESTAMP;
+    uint32_t CRC1;
+    char * PAYLOAD;
+    uint32_t CRC2;
+};
+
 /* Types de paquets */
 typedef enum {
     PTYPE_DATA = 1,

@@ -10,18 +10,18 @@
 /* Your code will be inserted here */
 
 /* Package structure */
-struct __attribute__((__packed__)) pkt {
-    unsigned int TYPE : 2;
-    unsigned int TR : 1;
-    unsigned int WINDOW : 5;
-    uint8_t SEQNUM;
-    unsigned int L : 1;
-    uint16_t LENGTH;
-    uint32_t TIMESTAMP;
-    uint32_t CRC1;
-    char * PAYLOAD;
-    uint32_t CRC2;
-};
+// struct __attribute__((__packed__)) pkt {
+//     unsigned int TYPE : 2;
+//     unsigned int TR : 1;
+//     unsigned int WINDOW : 5;
+//     uint8_t SEQNUM;
+//     unsigned int L : 1;
+//     uint16_t LENGTH;
+//     uint32_t TIMESTAMP;
+//     uint32_t CRC1;
+//     char * PAYLOAD;
+//     uint32_t CRC2;
+// };
 
 pkt_t* pkt_new()
 {
@@ -30,19 +30,24 @@ pkt_t* pkt_new()
       perror("Erreur lors du malloc du package");
       return NULL;
     }
-    pkt->TYPE = 0;
+    pkt->TYPE = 1;
     pkt->TR = 0;
     pkt->WINDOW = 0;
     pkt->LENGTH = htons(0);
     pkt->TIMESTAMP = 0;
     pkt->CRC1 = 0;
+    pkt->PAYLOAD = NULL;
     return pkt;
 }
 
 void pkt_del(pkt_t *pkt)
 {
-    free(pkt->PAYLOAD);
-    free(pkt);
+    if(pkt != NULL){  //Vérifie que le packet est contenu en mémoire avant de le libérer
+      if(pkt->PAYLOAD != NULL){ //Vérifie que la PAYLOAD est contenue en mémoire avant de la libérer
+          free(pkt->PAYLOAD);
+      }
+      free(pkt);
+    }
 }
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
@@ -57,7 +62,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
       uint16_t length_bytes = ntohs(*((uint16_t *)(data + 2)));
 
       /* TYPE */
-      unsigned int TYPE = binary_decode_type(first_byte);
+      ptypes_t TYPE = binary_decode_type(first_byte);
       if((status = pkt_set_type(pkt, TYPE)) != PKT_OK){return status;}
 
       /* TR */
@@ -69,8 +74,18 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
       if((status = pkt_set_window(pkt, WINDOW)) != PKT_OK){return status;}
 
       /* SEQNUM */
-      uint8_t SEQNUM = data[1];
+      uint8_t SEQNUM = data[3];
       if((status = pkt_set_seqnum(pkt, SEQNUM)) != PKT_OK){return status;}
+
+      /* LENGTH */
+
+      /* TIMESTAMP */
+      uint32_t TIMESTAMP = *((uint32_t *)(data + 4));
+      if((status = pkt_set_timestamp(pkt, TIMESTAMP)) != PKT_OK){return status;}
+
+      /* CRC1 */
+      uint32_t CRC1 = ntohl(*((uint32_t *)(data + 8)));
+
 
 
       return PKT_OK;
@@ -149,7 +164,7 @@ pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 
 pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
 {
-    if(window>MAX_WINDOW_SIZE){return E_WINDOW;} //window trop grand
+    if(window>MAX_WINDOW_SIZE){return E_WINDOW;} //WINDOW trop grand
     pkt->WINDOW = window;
     return PKT_OK;
 }
@@ -160,10 +175,10 @@ pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
     return PKT_OK;
 }
 
-pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
+pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length) 
 {
     if(length>MAX_PAYLOAD_SIZE){return E_LENGTH;}
-    pkt->LENGTH = length;
+    pkt->LENGTH = htons(length);
     return PKT_OK;
 }
 
