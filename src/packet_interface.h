@@ -15,7 +15,7 @@ struct __attribute__((__packed__)) pkt {
     unsigned int WINDOW : 5;
     uint8_t SEQNUM;
     unsigned int L : 1;
-    uint16_t LENGTH;
+    uint16_t LENGTH : 15;
     uint32_t TIMESTAMP;
     uint32_t CRC1;
     char * PAYLOAD;
@@ -205,12 +205,12 @@ uint8_t binary_decode_window(uint8_t first_byte);
 /*
  * Retourne la valeur de L contenu dans les 2 bytes de L et LENGTH
  */
-uint8_t binary_decode_l(uint16_t length_bytes);
+uint8_t binary_decode_l(uint8_t second_byte);
 
 /*
  * Retourne la valeur de LENGTH contenu dans les 2 bytes de L et LENGTH
  */
-uint16_t binary_decode_length(uint16_t length_bytes);
+uint16_t binary_decode_length(uint8_t L, uint16_t length_bytes);
 
 
 #endif  /* __PACKET_INTERFACE_H_ */
