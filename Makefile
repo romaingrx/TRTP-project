@@ -6,6 +6,7 @@ EXEC_NAME = Ex
 default : exec clean
 	@./$(EXEC_NAME)
 
+
 exec : practice.o packet.o
 	@gcc -o $(EXEC_NAME) practice.o packet.o
 
