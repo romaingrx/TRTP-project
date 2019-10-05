@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+
 //ONLY FOR TESTING
 typedef struct pkt{
   int WINDOW;
@@ -13,11 +15,11 @@ int n_bits_encode_window = 32;
 //END OF ONLY FOR TESTING
 
 
-int lastack = -1;
-int next = 0;
+int lastack = -1;//Last packet for which an ack was send
+int next = 0;//Expected next package
 
-int window_start = 0;
-int window_end = 0;
+int window_start = 0;//Window starting number
+int window_end = 0;//Window ending number set to windowsize-1;
 
 
 //BUFFER IMPLEMENTATION
@@ -27,7 +29,9 @@ typedef struct node {
 } node_t;
 
 node_t *head = NULL;
-
+/*
+* This function adds a packet to the buffer, at the end of it
+*/
 void buffer_add(pkt_t *pkt){
   node_t *newnode = malloc(sizeof(node_t));
   if(newnode == NULL){
@@ -49,7 +53,9 @@ void buffer_add(pkt_t *pkt){
   printf("ADDED %d to buffer\n", newnode->data->SEQNUM);
 
 }
-
+/*
+*This function returns the head of the buffer
+*/
 pkt_t* buffer_peak(){
   if(head == NULL){
     return NULL;
@@ -57,22 +63,25 @@ pkt_t* buffer_peak(){
   pkt_t* ret = head->data;
   return ret;
 }
+/*
+* This function removes the head of the buffer and replaces it with the next node;
+*/
 void buffer_remove(){
   node_t* oldhead = head;
-  head = head->next;
+  head = head->next;//no nullpointer since head->next = NULL on the last one
   free((void*) oldhead);
 }
 
 
-//BUFFER IMPLEMENTATION /
+//BUFFER IMPLEMENTATION END/
 
-//This function takes a packet and decodes it. It returns 0 if the packet is invalide
-//and 1 if it is valid;
+//This function takes a bytestream and decodes it. It returns 0 if the packet is invalide
+//and 1 if it is valid; --> for testing purpuses I am inputting a packet.
 int decode_pkt(pkt_t *pkt){
   return pkt->valid_packet;
 }
 
-//This function sends a packet to the final file.
+//This function sends a packet to the final destination (the txt).
 //For now it only prints a packet was recieved
 void data_ind(pkt_t *pkt){
   printf("Successfully recieved data %d\n", pkt->SEQNUM);
@@ -96,7 +105,7 @@ void window_inc(){
   printf("[%d,%d]\n", window_start, window_end);
 }
 
-//This function sends a PTYPE_ACK
+//This function sends a PTYPE_ACK to the sender
 void send_ack(int n){
   printf("ACK %d\n", n);
   lastack = n;
@@ -107,12 +116,15 @@ void send_ack(int n){
 
 
 //This function takes a bytestream and treats it. Always returns 0;
+//For testing it currently takes in a packet.
 int data_req(pkt_t *pkt){
   //This function should recieve a bytestream;
   //First we should send decode it.
   if(!decode_pkt(pkt)){
     //If packet not valid;
-    printf("Packet invalid, PTYPE_ACK OK%d\n",lastack);
+    printf("Packet invalid\n");
+    send_ack(lastack);
+    return 0;
   }
 
   if(pkt->SEQNUM < window_start || pkt->SEQNUM > window_end){
@@ -120,6 +132,8 @@ int data_req(pkt_t *pkt){
     printf("Out of window packet %d\n", pkt->SEQNUM);
     return 0;
   }
+
+
   int n = pkt->SEQNUM;
   if(n == next){
     //If the packet is in sequence
@@ -127,7 +141,8 @@ int data_req(pkt_t *pkt){
     data_ind(pkt) ;
     send_ack(n);
 
-    //SHOULD NOW SEND ALL PACKETS THAT ARE IN BUFFER AND ACK THEM
+    //I recieved a valid packet, now I check in the buffer if I had stored the next Expected
+    //packet. If it is in the buffer I call this function recursively with it. Otherwise the function ends.
     //do that by calling data_req(buffer.next) (recursion)
     pkt_t* buf = buffer_peak();
     if(buf != NULL){
@@ -140,7 +155,7 @@ int data_req(pkt_t *pkt){
     return 0;
   }
   else{
-    //n not next but is still in the window
+    //if the packet is out of sequence BUT inside the recieving window:
     //add it to buffer
     buffer_add(pkt);
     send_ack(lastack);
@@ -151,7 +166,7 @@ int data_req(pkt_t *pkt){
 
 
 
-
+//TOUT EN DESSOUS ICI EST JUSTE POUR FAIRE DES TESTS
 pkt_t* pkt_new(int seq, int valid)
 {
     pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
@@ -172,7 +187,7 @@ int main(int argc, char const *argv[]) {
   window_end=windowsize-1;
 
   pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(1, 1);
+  pkt_t *pkt1 = pkt_new(1, 0);
   pkt_t *pkt2 = pkt_new(2, 1);
   pkt_t *pkt3 = pkt_new(3, 1);
   pkt_t *pkt4 = pkt_new(4, 1);
