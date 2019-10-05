@@ -41,6 +41,15 @@ TODO
   - [x] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
   - [x] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
   </details>
+  <details><summary>packet_treatment.c</summary>
+    - [] ```int treat_treat(const pkt_t *)```
+    - [] ```boolean treat_header_crc1(const pkt_t *)```
+    - [] ```boolean treat_payload_crc2(const pkt_t *)```
+    - [] ```int treat_enqueue(const pkt_t *)```
+    - [] ```pkt_t treat_dequeue(int seqnum)```
+    - [] ```salut Romain```
+
+  </details>
   <details><summary>Getters</summary>
 
   - [x] ```ptypes_t pkt_get_type (const pkt_t*)```
