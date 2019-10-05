@@ -20,6 +20,52 @@ int window_start = 0;
 int window_end = 0;
 
 
+//BUFFER IMPLEMENTATION
+typedef struct node {
+    pkt_t *data;
+    struct node * next;
+} node_t;
+
+node_t *head = NULL;
+
+void buffer_add(pkt_t *pkt){
+  node_t *newnode = malloc(sizeof(node_t));
+  if(newnode == NULL){
+    printf("newnode malloc failed");
+    exit(-1);
+  }
+  newnode->data = pkt;
+  newnode->next = NULL;
+  if(head == NULL){
+    head = newnode;
+  }
+  else{
+    node_t *runner = head;
+    while(runner->next !=NULL){
+      runner = runner->next;
+    }
+    runner->next = newnode;
+  }
+  printf("ADDED %d to buffer\n", newnode->data->SEQNUM);
+
+}
+
+pkt_t* buffer_peak(){
+  if(head == NULL){
+    return NULL;
+  }
+  pkt_t* ret = head->data;
+  return ret;
+}
+void buffer_remove(){
+  node_t* oldhead = head;
+  head = head->next;
+  free((void*) oldhead);
+}
+
+
+//BUFFER IMPLEMENTATION /
+
 //This function takes a packet and decodes it. It returns 0 if the packet is invalide
 //and 1 if it is valid;
 int decode_pkt(pkt_t *pkt){
@@ -29,7 +75,7 @@ int decode_pkt(pkt_t *pkt){
 //This function sends a packet to the final file.
 //For now it only prints a packet was recieved
 void data_ind(pkt_t *pkt){
-  printf("Successfully recieved packet %d\n", pkt->SEQNUM);
+  printf("Successfully recieved data %d\n", pkt->SEQNUM);
   free(pkt);
 }
 
@@ -83,13 +129,21 @@ int data_req(pkt_t *pkt){
 
     //SHOULD NOW SEND ALL PACKETS THAT ARE IN BUFFER AND ACK THEM
     //do that by calling data_req(buffer.next) (recursion)
+    pkt_t* buf = buffer_peak();
+    if(buf != NULL){
+      if(buf->SEQNUM == next){
+        buffer_remove();
+        data_req(buf);
+      }
+    }
+
     return 0;
   }
   else{
     //n not next but is still in the window
     //add it to buffer
-    printf("Adding %d to buffer\n",n);
-    data_ack(lastack);
+    buffer_add(pkt);
+    send_ack(lastack);
   }
 }
 
@@ -126,6 +180,8 @@ int main(int argc, char const *argv[]) {
   data_req(pkt0);
   //data_req(pkt1);
   data_req(pkt2);
+  data_req(pkt3);
+  data_req(pkt1);
   return 0;
 
 }
