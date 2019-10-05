@@ -116,15 +116,13 @@ TODO
   </details>
 </details>
 
-Incompréhension
------------------
-- ##### L & LENGTH #####
+#### Incompréhension ####
+- ###### L & LENGTH ######
   L'utilité de L puisqu'on l'encodera d'office sur un uint16_t
 
-Erreurs possibles
-=================
+#### Erreurs possibles ####
 - L qui n'est pas en network-byte order
 
-Improvements
-=================
+#### Improvements ####
 - Dans `pkt_decode`, possibilité de `memcpy` le premier byte mais on doit s'assurer que tout est dans les bornes.
+- hton sur les uint16_t et uint32_t

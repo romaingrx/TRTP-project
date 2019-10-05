@@ -1,10 +1,10 @@
 #include "packet_interface.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <string.h>
 #include <zlib.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 /* Extra #includes */
 /* Your code will be inserted here */
@@ -119,10 +119,13 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
       return PKT_OK;
 }
 
-// pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
-// {
-//    /* Your code will be inserted here */
-// }
+pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
+{
+   pkt_status_code status;
+   time_t seconds;
+
+   return PKT_OK;
+}
 
 ptypes_t pkt_get_type  (const pkt_t* pkt)
 {
