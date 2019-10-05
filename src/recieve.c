@@ -176,12 +176,18 @@ int main(int argc, char const *argv[]) {
   pkt_t *pkt2 = pkt_new(2, 1);
   pkt_t *pkt3 = pkt_new(3, 1);
   pkt_t *pkt4 = pkt_new(4, 1);
+  pkt_t *pkt5 = pkt_new(5, 1);
+  pkt_t *pkt6 = pkt_new(6, 1);
 
   data_req(pkt0);
   //data_req(pkt1);
   data_req(pkt2);
   data_req(pkt3);
+
   data_req(pkt1);
+  data_req(pkt5);
+  data_req(pkt4);
+
   return 0;
 
 }
