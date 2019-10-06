@@ -5,6 +5,8 @@
 #include <zlib.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <math.h>
+#include <errno.h>
 
 /* Extra #includes */
 /* Your code will be inserted here */
@@ -27,7 +29,7 @@ pkt_t* pkt_new()
 {
     pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
     if (pkt == NULL) {
-      perror("Erreur lors du malloc du package");
+      fprintf(stderr, "Erreur lors du malloc du package");
       return NULL;
     }
     // pkt->TYPE = 1;
@@ -123,7 +125,8 @@ pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
 {
    pkt_status_code status;
    time_t seconds;
-
+   printf("%s\n",buf);
+   printf("%u\n",pkt->LENGTH);
    return PKT_OK;
 }
 
@@ -155,7 +158,7 @@ uint16_t pkt_get_length(const pkt_t* pkt)
 
 uint32_t pkt_get_timestamp   (const pkt_t* pkt)
 {
-    return pkt->TIMESTAMP;
+    return ntohl(pkt->TIMESTAMP);
 }
 
 uint32_t pkt_get_crc1   (const pkt_t* pkt)
@@ -244,33 +247,68 @@ pkt_status_code pkt_set_payload(pkt_t *pkt,
 }
 
 
-// ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
-// {
-//     /* Your code will be inserted here */
-// }
-//
-//
-// ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
-// {
-//     /* Your code will be inserted here */
-// }
-//
-// size_t varuint_len(const uint8_t *data)
-// {
-//     /* Your code will be inserted here */
-// }
-//
-//
-// ssize_t varuint_predict_len(uint16_t val)
-// {
-//     /* Your code will be inserted here */
-// }
-//
-//
-// ssize_t predict_header_length(const pkt_t *pkt)
-// {
-//     /* Your code will be inserted here */
-// }
+ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
+{
+    if(len != 1 && len != 2){
+        fprintf(stderr, "[varuint_decode] Dimension %zu différente de {1, 2} byte(s)\n", len);
+        return -1;}
+    uint8_t L = varuint_len(data);
+    if(L == 1){
+        *retval = (uint16_t)data[0];
+    }else if(L == 2){
+        uint16_t NBO= (uint16_t)((data[0] & 0b01111111) << 8); // Les 7 premiers bits
+        NBO += (uint8_t)(data[1]); // Les 8 bits suivants
+        *retval = ntohs(NBO);
+    }
+    return L;
+}
+
+
+ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
+{
+    if(len != 1 && len != 2){
+        fprintf(stderr, "[varuint_encode] Dimension %zu différente de {1, 2} byte(s)\n", len);
+        return -1;} // len != {1, 2} byte(s)
+    if(val > MAX_15BITS){
+        fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
+        return -1;} // Valeur trop grande pour etre encodee sur 15 bits
+    uint8_t L = varuint_predict_len(val);
+    if(len < L){
+        fprintf(stderr, "[varuint_encode] Dimension %zu de data trop petite pour stocker %u bytes \n", len, L);
+        return -1;} // Dimension de data trop petite pour stocker val
+    if(L == 1){
+        data[0] = (uint8_t)val;
+    }else if(L == 2){
+        val = htons(val);
+        data[0]  = (uint8_t)((val >> 8) & 0b01111111);
+        data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
+        data[1]  = (uint8_t)val;
+    }
+    return L;
+}
+
+size_t varuint_len(const uint8_t *data)
+{
+    return (data[0]>>7) + 1;
+}
+
+
+ssize_t varuint_predict_len(uint16_t val)
+{
+    if(val >= MAX_15BITS){
+        fprintf(stderr, "[varuint_predict_len] Valeur 0x%x plus grande que la valeur 0x%x encodable sur 15 bits\n", val, MAX_15BITS);
+        return -1;}
+    if(val > (uint8_t)pow(2,7) -1){return (ssize_t)2;} else{return (ssize_t)1;};
+}
+
+
+ssize_t predict_header_length(const pkt_t *pkt)
+{
+    if(pkt->LENGTH > MAX_15BITS){
+        fprintf(stderr, "[predict_header_length] Valeur de pkt->LENGTH 0x%x plus grande que la valeur 0x%x encodable sur 15 bits\n", pkt->LENGTH, MAX_15BITS);
+        return -1;}
+    return (pkt->L) + 7;
+}
 
 uint8_t binary_decode_type(uint8_t first_byte){
   uint8_t decoder = 0b11000000;
@@ -309,11 +347,4 @@ uint16_t binary_decode_length(uint8_t L, uint16_t length_bytes){
     uint8_t good_bits = 0;
   }
   return good_bits;
-}
-
-uint16_t binary_decode_length_old(uint8_t L, uint16_t length_bytes){
-  printf("%d\n",length_bytes);
-    length_bytes = length_bytes << 1;
-    length_bytes = length_bytes >> 1;
-    return length_bytes;
 }

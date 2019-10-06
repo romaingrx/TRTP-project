@@ -2,9 +2,11 @@ PRACTICE_PATH = src/practice.c
 PACKET_IMPLEM_PATH = src/packet_implem.c
 PACKET_INTERFACE_PATH = src/packet_interface.h
 EXEC_NAME = Ex
+ERR_FILE = src/stderr.txt
 
 default : exec clean
-	@./$(EXEC_NAME)
+	@./$(EXEC_NAME) 2> $(ERR_FILE)
+	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
 
 exec : practice.o packet.o

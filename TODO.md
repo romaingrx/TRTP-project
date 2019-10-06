@@ -24,11 +24,11 @@ TODO
 - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
 - [ ] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
 - [ ] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
-- [ ] ```ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)```
-- [ ] ```ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)```
-- [ ] ```size_t varuint_len(const uint8_t *data)```
-- [ ] ```ssize_t varuint_predict_len(uint16_t val)```
-- [ ] ```ssize_t predict_header_length(const pkt_t *pkt)```
+- [x] ```ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)```
+- [x] ```ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)```
+- [x] ```size_t varuint_len(const uint8_t *data)```
+- [x] ```ssize_t varuint_predict_len(uint16_t val)```
+- [x] ```ssize_t predict_header_length(const pkt_t *pkt)```
   <details><summary>Setters</summary>
 
   - [x] ```pkt_status_code pkt_set_type     (pkt_t*, const ptypes_t type)```
@@ -40,15 +40,6 @@ TODO
   - [x] ```pkt_status_code pkt_set_crc1     (pkt_t*, const uint32_t crc1)```
   - [x] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
   - [x] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
-  </details>
-  <details><summary>packet_treatment.c</summary>
-    - [] ```int treat_treat(const pkt_t *)```
-    - [] ```boolean treat_header_crc1(const pkt_t *)```
-    - [] ```boolean treat_payload_crc2(const pkt_t *)```
-    - [] ```int treat_enqueue(const pkt_t *)```
-    - [] ```pkt_t treat_dequeue(int seqnum)```
-    - [] ```salut Romain```
-
   </details>
   <details><summary>Getters</summary>
 
@@ -70,6 +61,16 @@ TODO
   - [x] uint8_t binary_decode_l(uint16_t length_bytes)
   - [x] uint16_t binary_decode_length(uint16_t length_bytes)
   </details>
+  <details><summary>packet_treatment.c</summary>
+
+    - [ ] ```int treat_treat(const pkt_t *)```
+    - [ ] ```boolean treat_header_crc1(const pkt_t *)```
+    - [ ] ```boolean treat_payload_crc2(const pkt_t *)```
+    - [ ] ```int treat_enqueue(const pkt_t *)```
+    - [ ] ```pkt_t treat_dequeue(int seqnum)```
+    - [ ] ```T'es qu'un porc Domi, tu le mets entre Setters et Getters```
+
+  </details>
 </details>
 
 #### Test Code ####
@@ -86,11 +87,11 @@ TODO
 - [ ] ```uint32_t pkt_get_crc2(const pkt_t*)```
 - [ ] ```pkt_status_code pkt_set_payload(pkt_t*, const char *data, const uint16_t length)```
 - [ ] ```pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2)```
-- [ ] ```ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)```
-- [ ] ```ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)```
-- [ ] ```size_t varuint_len(const uint8_t *data)```
-- [ ] ```ssize_t varuint_predict_len(uint16_t val)```
-- [ ] ```ssize_t predict_header_length(const pkt_t *pkt)```
+- [x] ```ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)```
+- [x] ```ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)```
+- [x] ```size_t varuint_len(const uint8_t *data)```
+- [x] ```ssize_t varuint_predict_len(uint16_t val)```
+- [xﬁ] ```ssize_t predict_header_length(const pkt_t *pkt)```
   <details><summary>Setters</summary>
 
   - [x] ```pkt_status_code pkt_set_type     (pkt_t*, const ptypes_t type)```
@@ -117,11 +118,11 @@ TODO
   </details>
   <details><summary>Binary decoders</summary>
 
-  - [ ] uint8_t binary_decode_type(uint8_t first_byte)
-  - [ ] uint8_t binary_decode_tr(uint8_t first_byte)
-  - [ ] uint8_t binary_decode_window(uint8_t first_byte)
-  - [ ] uint8_t binary_decode_l(uint16_t length_bytes)
-  - [ ] uint16_t binary_decode_length(uint16_t length_bytes)
+  - [ ] ```uint8_t binary_decode_type(uint8_t first_byte)```
+  - [ ] ```uint8_t binary_decode_tr(uint8_t first_byte)```
+  - [ ] ```uint8_t binary_decode_window(uint8_t first_byte)```
+  - [ ] ```uint8_t binary_decode_l(uint16_t length_bytes)```
+  - [ ] ```uint16_t binary_decode_length(uint16_t length_bytes)```
   </details>
 </details>
 

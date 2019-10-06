@@ -10,12 +10,12 @@ typedef struct pkt pkt_t;
 
 /* Package structure */
 struct __attribute__((__packed__)) pkt {
-    unsigned int TYPE : 2;
-    unsigned int TR : 1;
-    unsigned int WINDOW : 5;
     uint8_t SEQNUM;
-    unsigned int L : 1;
     uint16_t LENGTH : 15;
+    unsigned int L : 1;
+    unsigned WINDOW : 5;
+    unsigned int TR : 1;
+    unsigned int TYPE : 2;
     uint32_t TIMESTAMP;
     uint32_t CRC1;
     char * PAYLOAD;
@@ -33,6 +33,8 @@ typedef enum {
 #define MAX_PAYLOAD_SIZE 512
 /* Taille maximale de Window */
 #define MAX_WINDOW_SIZE 31
+/* Taille maximale sur 15 bits*/
+#define MAX_15BITS 0x8000
 
 /* Valeur de retours des fonctions */
 typedef enum {
@@ -162,7 +164,6 @@ ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval);
  *           la taille necessaire pour encoder le varuint (1 ou 2 bytes) si aucune erreur ne s'est produite
  */
 ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len);
-
 
 /*
  * @pre: data pointe vers un buffer d'au moins 1 byte
