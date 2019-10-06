@@ -11,7 +11,7 @@ typedef struct pkt{
 }pkt_t;
 //Temporary package structure testing interface
 int windowsize = 4;
-int n_bits_encode_window = 32;
+int n_bits_encode_window = 2;
 //END OF ONLY FOR TESTING
 
 
@@ -125,15 +125,27 @@ int data_req(pkt_t *pkt){
     send_ack(lastack);
     return 0;
   }
-
-  if(pkt->SEQNUM < window_start || pkt->SEQNUM > window_end){
-    //Packet not inside window, ignore it
-    printf("Out of window packet\n");
-    return 0;
+  int n = pkt->SEQNUM;
+  if(window_start < window_end){
+    if(n < window_start || n > window_end){
+      //Packet not inside window, ignore it
+      printf("Out of window packet 1\n");
+      return 0;
+    }
+  }
+  if(window_start > window_end){
+    if(pkt->SEQNUM > window_start || pkt->SEQNUM < window_end){
+      //Packet not inside window, ignore it
+      printf("Out of window packet 2\n");
+      return 0;
+    }
   }
 
 
-  int n = pkt->SEQNUM;
+
+
+
+
   if(n == next){
     //If the packet is in sequence
     next_inc();
@@ -190,8 +202,12 @@ int main(int argc, char const *argv[]) {
   pkt_t *pkt2 = pkt_new(2, 1);
   pkt_t *pkt3 = pkt_new(3, 1);
   pkt_t *pkt4 = pkt_new(4, 1);
-  pkt_t *pkt5 = pkt_new(5, 1);
-  pkt_t *pkt6 = pkt_new(6, 1);
+  pkt_t *pkt5 = pkt_new(0, 1);
+  pkt_t *pkt6 = pkt_new(1, 1);
+  pkt_t *pkt7 = pkt_new(2, 1);
+  pkt_t *pkt8 = pkt_new(3, 1);
+  pkt_t *pkt9 = pkt_new(4, 1);
+  pkt_t *pkt10 = pkt_new(0,1);
 
   data_req(pkt0);
   data_req(pkt1);
@@ -201,6 +217,13 @@ int main(int argc, char const *argv[]) {
   //data_req(pkt1);
   //data_req(pkt5);
   data_req(pkt4);
+  data_req(pkt5);
+  data_req(pkt6);
+  data_req(pkt7);
+  data_req(pkt8);
+  data_req(pkt9);
+  data_req(pkt10);
+
 
   return 0;
 
