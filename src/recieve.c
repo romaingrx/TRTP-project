@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
 
 //ONLY FOR TESTING
 typedef struct pkt{
@@ -89,7 +89,7 @@ void data_ind(pkt_t *pkt){
 
 //This function increases the "next" variable
 void next_inc(){
-  if(next < 2^n_bits_encode_window){
+  if(next < pow(2,n_bits_encode_window)){
     next++;
     return;
   }
@@ -97,9 +97,9 @@ void next_inc(){
   next = 0;
 }
 void window_inc(){
-  if(window_start < 2^n_bits_encode_window){  window_start ++;}
+  if(window_start < pow(2,n_bits_encode_window)){  window_start ++;}
   else {window_start = 0;}
-  if(window_end < 2^n_bits_encode_window){  window_end ++;}
+  if(window_end < pow(2,n_bits_encode_window)){  window_end ++;}
   else {window_end = 0;}
   printf("[%d,%d]\n", window_start, window_end);
 }
@@ -128,7 +128,7 @@ int data_req(pkt_t *pkt){
 
   if(pkt->SEQNUM < window_start || pkt->SEQNUM > window_end){
     //Packet not inside window, ignore it
-    printf("Out of window packet %d\n", pkt->SEQNUM);
+    printf("Out of window packet\n");
     return 0;
   }
 
@@ -186,7 +186,7 @@ int main(int argc, char const *argv[]) {
   window_end=windowsize-1;
 
   pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(1, 0);
+  pkt_t *pkt1 = pkt_new(1, 1);
   pkt_t *pkt2 = pkt_new(2, 1);
   pkt_t *pkt3 = pkt_new(3, 1);
   pkt_t *pkt4 = pkt_new(4, 1);
@@ -194,12 +194,12 @@ int main(int argc, char const *argv[]) {
   pkt_t *pkt6 = pkt_new(6, 1);
 
   data_req(pkt0);
-  //data_req(pkt1);
+  data_req(pkt1);
   data_req(pkt2);
   data_req(pkt3);
 
-  data_req(pkt1);
-  data_req(pkt5);
+  //data_req(pkt1);
+  //data_req(pkt5);
   data_req(pkt4);
 
   return 0;
