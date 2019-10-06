@@ -10,12 +10,12 @@ typedef struct pkt pkt_t;
 
 /* Package structure */
 struct __attribute__((__packed__)) pkt {
-    uint8_t SEQNUM;
-    uint16_t LENGTH : 15;
-    unsigned int L : 1;
     unsigned WINDOW : 5;
     unsigned int TR : 1;
     unsigned int TYPE : 2;
+    uint16_t LENGTH : 15;
+    unsigned int L : 1;
+    uint8_t SEQNUM;
     uint32_t TIMESTAMP;
     uint32_t CRC1;
     char * PAYLOAD;
@@ -38,6 +38,7 @@ typedef enum {
 
 /* Valeur de retours des fonctions */
 typedef enum {
+    E_OTHER = -1,
     PKT_OK = 0,     /* Le paquet a ete traite avec succes */
     E_TYPE,         /* Erreur liee au champs Type */
     E_TR,           /* Erreur liee au champ TR */
@@ -93,6 +94,18 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt);
  *         le buffer est trop petit.
  */
 pkt_status_code pkt_encode(const pkt_t*, char *buf, size_t *len);
+
+/*
+ * Encode le header de la structure dans data
+ * (Rien ne doit être en Network Byte Order et pkt doit être rempli de TIMESTAMP, CRC1, CRC2
+ *  à l'avance si besoin)
+ *
+ * @pkt: la structure a encoder
+ * @buf: Le buffer dans lequel la structure sera encodee
+ * @return: L'offset pour encoder CRC1 ou renvoi 0 si une erreur survient
+ *
+ */
+size_t header_encode(const pkt_t *pkt,char *buf);
 
 /* Accesseurs pour les champs toujours presents du paquet.
  * Les valeurs renvoyees sont toutes dans l'endianness native

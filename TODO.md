@@ -127,12 +127,14 @@ TODO
 </details>
 
 #### Incompréhension ####
-- ###### L & LENGTH ######
-  L'utilité de L puisqu'on l'encodera d'office sur un uint16_t
+- `pkt_set_tr` : les conditions pour être accepté
+- `pkt_get_crc2` : les conditions pour exister
 
-#### Erreurs possibles ####
-- L qui n'est pas en network-byte order
+#### Erreurs ####
+- varuint_encode et varuint_decode pour un LENGTH rempli de 1 (0 vient se mettre au milieu)
+
 
 #### Improvements ####
 - Dans `pkt_decode`, possibilité de `memcpy` le premier byte mais on doit s'assurer que tout est dans les bornes.
 - hton sur les uint16_t et uint32_t
+- `varuint_encode` : Les deux cas si htons(1) == 1 ou pas
