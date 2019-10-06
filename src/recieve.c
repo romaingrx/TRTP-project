@@ -29,6 +29,7 @@ typedef struct node {
 } node_t;
 
 node_t *head = NULL;
+node_t *last = NULL;
 /*
 * This function adds a packet to the buffer, at the end of it
 */
@@ -44,12 +45,10 @@ void buffer_add(pkt_t *pkt){
     head = newnode;
   }
   else{
-    node_t *runner = head;
-    while(runner->next !=NULL){
-      runner = runner->next;
-    }
+    node_t *runner = last;
     runner->next = newnode;
   }
+  last = newnode;
   printf("ADDED %d to buffer\n", newnode->data->SEQNUM);
 
 }
