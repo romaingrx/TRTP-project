@@ -7,6 +7,10 @@ ERR_FILE = src/stderr.txt
 TEST_PATH = tests/test.c
 TEST_NAME = Test
 
+RECIEVE_PATH = src/recieve.c
+RECIEVE_NAME = Recieve
+
+
 default : exec clean
 	@./$(EXEC_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
@@ -15,7 +19,14 @@ test : test_ex clean
 	@./$(TEST_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
+ben : recieve
+	@./$(RECIEVE_NAME)
+#	@./$(RECIEVE_NAME) 2> $(ERR_FILE)
+#	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
+
+recieve : $(RECIEVE_PATH)
+	gcc -o $(RECIEVE_NAME) $(RECIEVE_PATH) -lm
 
 exec : practice.o packet.o
 	@gcc -o $(EXEC_NAME) practice.o packet.o

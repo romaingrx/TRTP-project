@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
+//#include <zlib.h>
 #include <arpa/inet.h>
 #include <time.h>
 #include <math.h>
@@ -15,6 +15,7 @@ void test_decode(char* buf);
 int main(int argc, char const *argv[]) {
     char* buf = test_encode();
     test_decode(buf);
+    free(buf);
     return 0;
 }
 

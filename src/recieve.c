@@ -11,7 +11,7 @@ typedef struct pkt{
 }pkt_t;
 //Temporary package structure testing interface
 int windowsize = 4;
-int n_bits_encode_window = 2;
+int n_bits_encode_window = 16;
 //END OF ONLY FOR TESTING
 
 
@@ -168,6 +168,12 @@ int data_req(pkt_t *pkt){
   else{
     //if the packet is out of sequence BUT inside the recieving window:
     //add it to buffer
+    if(head != NULL){
+      if(buffer_peak()->SEQNUM == n){
+        printf("Already in buffer\n");
+        return 0;
+      }
+    }
     buffer_add(pkt);
     send_ack(lastack);
   }
@@ -211,18 +217,19 @@ int main(int argc, char const *argv[]) {
 
   data_req(pkt0);
   data_req(pkt1);
-  data_req(pkt2);
   data_req(pkt3);
+  data_req(pkt3);
+  data_req(pkt2);
 
   //data_req(pkt1);
   //data_req(pkt5);
-  data_req(pkt4);
+  /*data_req(pkt4);
   data_req(pkt5);
   data_req(pkt6);
   data_req(pkt7);
   data_req(pkt8);
   data_req(pkt9);
-  data_req(pkt10);
+  data_req(pkt10);*/
 
 
   return 0;
