@@ -116,6 +116,7 @@ uint8_t  pkt_get_tr       (const pkt_t*);
 uint8_t  pkt_get_window   (const pkt_t*);
 uint8_t  pkt_get_seqnum   (const pkt_t*);
 uint16_t pkt_get_length   (const pkt_t*);
+uint8_t  pkt_get_l        (const pkt_t*);
 uint32_t pkt_get_timestamp(const pkt_t*);
 uint32_t pkt_get_crc1     (const pkt_t*);
 /* Renvoie un pointeur vers le payload du paquet, ou NULL s'il n'y
@@ -137,6 +138,7 @@ pkt_status_code pkt_set_tr       (pkt_t*, const uint8_t tr);
 pkt_status_code pkt_set_window   (pkt_t*, const uint8_t window);
 pkt_status_code pkt_set_seqnum   (pkt_t*, const uint8_t seqnum);
 pkt_status_code pkt_set_length   (pkt_t*, const uint16_t length);
+pkt_status_code pkt_set_l        (pkt_t*, const uint8_t l);
 pkt_status_code pkt_set_timestamp(pkt_t*, const uint32_t timestamp);
 pkt_status_code pkt_set_crc1     (pkt_t*, const uint32_t crc1);
 /* Defini la valeur du champs payload du paquet.

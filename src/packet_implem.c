@@ -52,94 +52,76 @@ void pkt_del(pkt_t *pkt)
     }
 }
 
+pkt_status_code header_decode(pkt_t *pkt,const char *buf, size_t *offset){
+
+    char first_byte = buf[0];
+    pkt_status_code status;
+    status = pkt_set_type(pkt, binary_decode_type(first_byte));
+    if(status != PKT_OK){return status;}
+    status = pkt_set_tr(pkt, binary_decode_tr(first_byte));
+    if(status != PKT_OK){return status;}
+    status = pkt_set_window(pkt, binary_decode_window(first_byte));
+    if(status != PKT_OK){return status;}
+
+    uint8_t *data = malloc(2);
+    uint16_t retval;
+    memcpy(data, (void*)&buf[1],2);
+    size_t L = varuint_decode(data, 2, &retval);
+    free(data);
+    if(L != 0 && L != 1){return E_OTHER;}
+    status = pkt_set_l(pkt, L);
+    if(status != PKT_OK){return status;}
+    status = pkt_set_length(pkt, retval);
+    if(status != PKT_OK){return status;}
+    if (L == 0) {*offset = 2;} else {*offset = 3;}
+
+    uint8_t SEQNUM;
+    memcpy(&SEQNUM, (void*)&buf[*offset], 1);
+    status = pkt_set_seqnum(pkt, SEQNUM);
+    if(status != PKT_OK){return status;}
+    *offset += 1;
+    uint32_t TIMESTAMP;
+    memcpy(&TIMESTAMP, (void*)&buf[*offset], 4);
+    status = pkt_set_timestamp(pkt, ntohl(TIMESTAMP));
+    if(status != PKT_OK){return status;}
+    *offset += 4;
+
+    return PKT_OK;
+}
+
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 {
     pkt_status_code status;
-    // uint8_t TYPE, TR, WINDOW, L, SEQNUM;
-    int byte_start_for_seqnum = 2; // Par défault L = 0
+    size_t offset;
+    uint32_t CRC1, CRC2;
 
     /* Vérifie la validité du packet */
     if(!len){return E_UNCONSISTENT;} // 0 bit reçu
     if(len < 4){return E_NOHEADER;} // < 32 bits reçu, header incorrect
 
-    uint8_t data_length;
-    memcpy(&data_length, pkt+1, 1);
+    status = header_decode(pkt, data, &offset);
+    if(status != PKT_OK){return status;}
+
+    memcpy(&CRC1, (void*)&data[offset], 4);
+    status = pkt_set_crc1(pkt, ntohl(CRC1));
+    if(status != PKT_OK){return status;}
+    offset += 4;
+
+    uint16_t length = pkt_get_length(pkt);
+    char *PAYLOAD = malloc(length);
+    memcpy(PAYLOAD, (void*)&data[offset], length);
+    status = pkt_set_payload(pkt, PAYLOAD, length);
+    if(status != PKT_OK){return status;}
+    offset += length;
+
+    memcpy(&CRC2, (void*)&data[offset], 4);
+    status = pkt_set_crc2(pkt, ntohl(CRC2));
+    if(status != PKT_OK){return status;}
+    offset += 4;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // /* DECODE LE HEADER */
-    //   uint8_t first_byte = data[0];
-    //   uint8_t second_byte = data[1];
-    //   uint16_t length_bytes;
-    //
-    //   /* L */
-    //   uint8_t L = binary_decode_l(second_byte);
-    //   if(L == 1){
-    //     byte_start_for_seqnum = 3;
-    //     memcpy(&length_bytes, &data[1], 2);
-    //   }else{
-    //     memcpy(&length_bytes, &data[1], 1);
-    //   }
-    //
-    //   /* TYPE */
-    //   ptypes_t TYPE = binary_decode_type(first_byte);
-    //   if((status = pkt_set_type(pkt, TYPE)) != PKT_OK){return status;}
-    //
-    //   /* TR */
-    //   unsigned int TR = binary_decode_tr(first_byte);
-    //   if((status = pkt_set_tr(pkt, TR)) != PKT_OK){return status;}
-    //
-    //   /* WINDOW */
-    //   unsigned int WINDOW = binary_decode_window(first_byte);
-    //   if((status = pkt_set_window(pkt, WINDOW)) != PKT_OK){return status;}
-    //
-    //   /* SEQNUM */
-    //   uint8_t SEQNUM = data[byte_start_for_seqnum];
-    //   if((status = pkt_set_seqnum(pkt, SEQNUM)) != PKT_OK){return status;}
-    //
-    //   /* LENGTH */
-    //   if(L==1){length_bytes = ntohs(length_bytes);} // Pas dans le cas où L == 0 car uint8_t encodé sur un uint16_t donc ça change sa vraie valeure
-    //   uint16_t LENGTH = binary_decode_length(L, length_bytes);
-    // 	status = pkt_set_length(pkt, LENGTH);
-    // 	if(status != PKT_OK){return status;}
-    //
-    //   /* TIMESTAMP */
-    //   uint32_t TIMESTAMP = *((uint32_t *)(data + (byte_start_for_seqnum + 1)));
-    //   if((status = pkt_set_timestamp(pkt, TIMESTAMP)) != PKT_OK){return status;}
-    //
-    //   /* CRC1 */
-    //   uint32_t CRC1 = (*((uint32_t *)(data + (byte_start_for_seqnum + 5))));
-    //   status = pkt_set_crc1(pkt, CRC1);
-    //   if(status != PKT_OK){return status;}
-    //
-    //   /* PAYLOAD */
-    //   char data_payload[LENGTH];
-    //   memcpy(&data_payload, ((void *)(data + (byte_start_for_seqnum + 9))), LENGTH);
-    //   status = pkt_set_payload(pkt, (const char *)&data_payload, LENGTH);
-    //   if(status != PKT_OK){return status;}
-    //
-    //   /* CRC2 */
-    //   uint32_t CRC2 = (*((uint32_t *)(data + (byte_start_for_seqnum + LENGTH + 9))));
-    //   status = pkt_set_crc2(pkt, CRC2);
-    //   if(status != PKT_OK){return status;}
-
-
-
-      return PKT_OK;
+     free(PAYLOAD);
+     return PKT_OK;
 }
 
 size_t header_encode(const pkt_t *pkt,char *buf){
@@ -206,9 +188,14 @@ uint16_t pkt_get_length(const pkt_t* pkt)
     return 0;
 }
 
+uint8_t pkt_get_l(const pkt_t* pkt)
+{
+    return pkt->L;
+}
+
 uint32_t pkt_get_timestamp   (const pkt_t* pkt)
 {
-    return ntohl(pkt->TIMESTAMP);
+    return pkt->TIMESTAMP;
 }
 
 uint32_t pkt_get_crc1   (const pkt_t* pkt)
@@ -272,6 +259,12 @@ pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
     return PKT_OK;
 }
 
+pkt_status_code pkt_set_l (pkt_t* pkt, const uint8_t l){
+    if (l > 1) {return E_LENGTH;}
+    pkt->L = l;
+    return PKT_OK;
+}
+
 pkt_status_code pkt_set_timestamp(pkt_t *pkt, const uint32_t timestamp)
 {
     pkt->TIMESTAMP = timestamp;
@@ -308,9 +301,9 @@ ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
         fprintf(stderr, "[varuint_decode] Dimension %zu différente de {1, 2} byte(s)\n", len);
         return -1;}
     uint8_t L = varuint_len(data);
-    if(L == 1){
+    if(L == 0){
         *retval = (uint16_t)data[0];
-    }else if(L == 2){
+    }else if(L == 1){
         uint16_t NBO= (uint16_t)((data[0] & 0b01111111) << 8); // Les 7 premiers bits
         NBO += (uint8_t)(data[1]); // Les 8 bits suivants
         *retval = ntohs(NBO);
@@ -347,12 +340,12 @@ ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
         fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
         return -1;} // Valeur trop grande pour etre encodee sur 15 bits
     uint8_t L = varuint_predict_len(val);
-    if(len < L){
+    if(len < (L+1)){
         fprintf(stderr, "[varuint_encode] Dimension %zu de data trop petite pour stocker %u bytes \n", len, L);
         return -1;} // Dimension de data trop petite pour stocker val
-    if(L == 1){
+    if(L == 0){
         data[0] = (uint8_t)val;
-    }else if(L == 2){
+    }else if(L == 1){
         val = htons(val);
         data[0]  = (uint8_t)((val >> 8) & 0b01111111);
         data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
@@ -372,12 +365,12 @@ ssize_t varuint_encode_experimental(uint16_t val, uint8_t *data, const size_t le
         fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
         return -1;} // Valeur trop grande pour etre encodee sur 15 bits
     uint8_t L = len;
-    if(len < L){
+    if(len < (L+1)){
         fprintf(stderr, "[varuint_encode] Dimension %zu de data trop petite pour stocker %u bytes \n", len, L);
         return -1;} // Dimension de data trop petite pour stocker val
-    if(L == 1){
+    if(L == 0){
         data[0] = (uint8_t)val;
-    }else if(L == 2){
+    }else if(L == 1){
         if(ntohs(1) == 1){
             data[0]  = (uint8_t)((val >> 8) & 0b01111111);
             data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
@@ -399,7 +392,7 @@ ssize_t varuint_encode_experimental(uint16_t val, uint8_t *data, const size_t le
 
 size_t varuint_len(const uint8_t *data)
 {
-    return (data[0]>>7) + 1;
+    return (data[0]>>7);
 }
 
 
@@ -408,7 +401,7 @@ ssize_t varuint_predict_len(uint16_t val)
     if(val >= MAX_15BITS){
         fprintf(stderr, "[varuint_predict_len] Valeur 0x%x plus grande que la valeur 0x%x encodable sur 15 bits\n", val, MAX_15BITS);
         return -1;}
-    if(val > (uint8_t)pow(2,7) -1){return (ssize_t)2;} else{return (ssize_t)1;};
+    if(val > (uint8_t)pow(2,7) -1){return (ssize_t)1;} else{return (ssize_t)0;};
 }
 
 
