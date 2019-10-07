@@ -1,39 +1,49 @@
-PRACTICE_PATH = src/practice.c
 PACKET_IMPLEM_PATH = src/packet_implem.c
 PACKET_INTERFACE_PATH = src/packet_interface.h
-EXEC_NAME = Ex
+PRACTICE_PATH = src/practice.c
+TEST_PATH = tests/test.c
+RECIEVE_PATH = src/recieve.c
+MAIN_PATH = src/main.c
+
 ERR_FILE = src/stderr.txt
 
-TEST_PATH = tests/test.c
-TEST_NAME = Test
+PRACTICE_NAME = practice
+TEST_NAME = test
+RECIEVE_NAME = recieve
+MAIN_NAME = main
 
-RECIEVE_PATH = src/recieve.c
-RECIEVE_NAME = Recieve
 
-
-default : exec clean
-	@./$(EXEC_NAME) 2> $(ERR_FILE)
+default : practice_exec
+	@./$(PRACTICE_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
-test : test_ex clean
+test : test_exec 
 	@./$(TEST_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
-ben : recieve
+main : main_exec
+	@./$(MAIN_NAME) 2> $(ERR_FILE)
+	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
+
+ben : recieve_exec
 	@./$(RECIEVE_NAME)
 #	@./$(RECIEVE_NAME) 2> $(ERR_FILE)
 #	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
+main_exec : main.o packet.o
+	@gcc -o $(MAIN_NAME) main.o packet.o
 
-recieve : $(RECIEVE_PATH)
-	gcc -o $(RECIEVE_NAME) $(RECIEVE_PATH) -lm
+recieve_exec : $(RECIEVE_PATH)
+	@gcc -o $(RECIEVE_NAME) $(RECIEVE_PATH) -lm
 
-exec : practice.o packet.o
-	@gcc -o $(EXEC_NAME) practice.o packet.o
+practice_exec : practice.o packet.o
+	@gcc -o $(PRACTICE_NAME) practice.o packet.o
 
-test_ex : test.o packet.o
+test_exec : test.o packet.o
 	@gcc -o $(TEST_NAME) test.o packet.o
 
+main.o : $(MAIN_PATH) $(PACKET_INTERFACE_PATH)
+	@gcc -c $(MAIN_PATH) -o main.o
 
 practice.o : $(PRACTICE_PATH) $(PACKET_INTERFACE_PATH)
 	@gcc -c $(PRACTICE_PATH) -o practice.o
@@ -45,4 +55,5 @@ test.o : $(TEST_PATH) $(PACKET_INTERFACE_PATH)
 	@gcc -c $(TEST_PATH) -o test.o
 
 clean :
-	@rm *.o
+	@rm -f *.o
+	@rm -f $(PRACTICE_NAME) $(TEST_NAME) $(RECIEVE_NAME) $(MAIN_NAME)
