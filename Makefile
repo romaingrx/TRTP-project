@@ -2,14 +2,14 @@ PACKET_IMPLEM_PATH = src/packet_implem.c
 PACKET_INTERFACE_PATH = src/packet_interface.h
 PRACTICE_PATH = src/practice.c
 TEST_PATH = tests/test.c
-RECIEVE_PATH = src/recieve.c
+RECIEVE_PATH = src/receive.c
 MAIN_PATH = src/main.c
 
 ERR_FILE = src/stderr.txt
 
 PRACTICE_NAME = practice
 TEST_NAME = test
-RECIEVE_NAME = recieve
+RECIEVE_NAME = receive
 MAIN_NAME = main
 
 VAR = default
@@ -28,7 +28,7 @@ main : main_exec
 	@./$(MAIN_NAME) $(VAR) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
-ben : recieve_exec
+receive : receive_exec
 	@./$(RECIEVE_NAME)
 #	@./$(RECIEVE_NAME) 2> $(ERR_FILE)
 #	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
@@ -36,7 +36,7 @@ ben : recieve_exec
 main_exec : main.o packet.o
 	@gcc -o $(MAIN_NAME) main.o packet.o
 
-recieve_exec : $(RECIEVE_PATH)
+receive_exec : $(RECIEVE_PATH)
 	@gcc -o $(RECIEVE_NAME) $(RECIEVE_PATH) -lm
 
 practice_exec : practice.o packet.o
