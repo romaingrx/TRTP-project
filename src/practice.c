@@ -18,8 +18,8 @@ int main(int argc, char const *argv[]) {
   // test_decode_header();
   // test_decode_all();
   // test_pointer_struct();
-  test_encode();
-
+  // test_encode();
+  printf("%s\n", "PROUT");
 
   return 0;
 }
@@ -74,16 +74,16 @@ void test_pointer_struct(){
 void test_encode(){
     pkt_t *pkt = pkt_new();
     pkt->TYPE = 0b01;
-    pkt->TR = 0x0;
+    pkt->TR = 0;
     pkt->WINDOW = 12;
     pkt->L = 0;
-    pkt->LENGTH = 27;
-    pkt->SEQNUM = 66;
-    pkt->TIMESTAMP = 128;
-    pkt->CRC1 = 0;
-    pkt->CRC2 = 0;
+    pkt->LENGTH = 30;
+    pkt->SEQNUM = 12;
+    pkt->TIMESTAMP = 66;
+    pkt->CRC1 = 37;
+    pkt->CRC2 = 666;
     char* data = "GROSSE GROSSE BITE DE NOIR";
-    pkt_set_payload(pkt, data, 27);
+    pkt_set_payload(pkt, data, pkt->LENGTH);
 
     size_t len = 128;
     char *buf = malloc(len);
@@ -91,8 +91,24 @@ void test_encode(){
     printf("TYPE : \t%u \n",((uint8_t)buf[0] >> 6));
     printf("TR : \t%u \n",((uint8_t)buf[0] >> 5) & 0b00000001);
     printf("WINDOW : \t%u \n",((uint8_t)buf[0]) & 0b00011111);
+    printf("L : \t%u\n", (uint8_t)buf[1]>>7);
+    printf("LENGTH : \t%u\n", (uint8_t)buf[1] & 0b01111111);
     char *text = malloc(27);
     memcpy(text, &buf[11], 27);
     printf("DATA : %s\n", text);
+
+    pkt_t *pktd = pkt_new();
+    status = pkt_decode(buf, 128, pktd);
+    printf("Type decode \t: %u\n",pkt_get_type(pktd));
+    printf("TR decode \t: %u\n",pkt_get_tr(pktd));
+    printf("Window decode \t: %u\n",pkt_get_window(pktd));
+    printf("L decode \t: %u\n",pkt_get_l(pktd));
+    printf("Length decode \t: %u\n",pkt_get_length(pktd));
+    printf("Seqnum decode \t: %u\n",pkt_get_seqnum(pktd));
+    printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
+    printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
+    printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
+    free(text);
     pkt_del(pkt);
+    pkt_del(pktd);
 }

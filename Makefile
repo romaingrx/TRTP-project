@@ -1,62 +1,61 @@
-PACKET_IMPLEM_PATH = src/packet_implem.c
-PACKET_INTERFACE_PATH = src/packet_interface.h
-PRACTICE_PATH = src/practice.c
-TEST_PATH = tests/test.c
-RECIEVE_PATH = src/receive.c
-MAIN_PATH = src/main.c
+C_MAIN     = src/main.c
+C_PRACTICE =  src/practice.c
+C_PACKET   = src/packet_implem.c
+H_PACKET   = src/packet_interface.h
+C_RECEIVE  = src/receive.c
+H_RECEIVE  = src/receive.h
+C_QUEUE    = src/queue.c
+H_QUEUE    = src/queue.h
+
+O_MAIN     = main.o
+O_PRACTICE = practice.o
+O_PACKET   = packet.o
+O_QUEUE    = queue.o
+O_RECEIVE  = receive.o
+
+EXEC_PRACTICE = practice
+EXEC_RECEIVE  = receive
+EXEC_MAIN     = main
 
 ERR_FILE = src/stderr.txt
+VAR = "192.168.1.5 7903"
 
-PRACTICE_NAME = practice
-TEST_NAME = test
-RECIEVE_NAME = receive
-MAIN_NAME = main
-
-VAR = default
+COMP = @gcc
 
 
-default : practice_exec
-	@./$(PRACTICE_NAME) 2> $(ERR_FILE)
+
+
+
+
+default : $(EXEC_PRACTICE)
+	@./$(EXEC_PRACTICE) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
-
-test : test_exec
-	@./$(TEST_NAME) 2> $(ERR_FILE)
-	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
-
-# UTILISER 'make main VAR=""' en mettant les arguments de la main dans les crochets de VAR
-main : main_exec
-	@./$(MAIN_NAME) $(VAR) 2> $(ERR_FILE)
-	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
-
-receive : receive_exec
-	@./$(RECIEVE_NAME)
-#	@./$(RECIEVE_NAME) 2> $(ERR_FILE)
-#	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
-
-main_exec : main.o packet.o
-	@gcc -o $(MAIN_NAME) main.o packet.o
-
-receive_exec : $(RECIEVE_PATH)
-	@gcc -o $(RECIEVE_NAME) $(RECIEVE_PATH) -lm
-
-practice_exec : practice.o packet.o
-	@gcc -o $(PRACTICE_NAME) practice.o packet.o
-
-test_exec : test.o packet.o
-	@gcc -o $(TEST_NAME) test.o packet.o
-
-main.o : $(MAIN_PATH) $(PACKET_INTERFACE_PATH)
-	@gcc -c $(MAIN_PATH) -o main.o
-
-practice.o : $(PRACTICE_PATH) $(PACKET_INTERFACE_PATH)
-	@gcc -c $(PRACTICE_PATH) -o practice.o
-
-packet.o : $(PACKET_IMPLEM_PATH) $(PACKET_INTERFACE_PATH)
-	@gcc -c $(PACKET_IMPLEM_PATH) -o packet.o
-
-test.o : $(TEST_PATH) $(PACKET_INTERFACE_PATH)
-	@gcc -c $(TEST_PATH) -o test.o
 
 clean :
 	@rm -f *.o
-	@rm -f $(PRACTICE_NAME) $(TEST_NAME) $(RECIEVE_NAME) $(MAIN_NAME)
+	@rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE) *.o
+
+
+$(EXEC_MAIN) : $(O_MAIN) $(O_RECEIVE)
+	$(COMP) -o $(EXEC_MAIN) $(O_MAIN) $(O_RECEIVE)
+
+$(EXEC_RECEIVE) : $(O_RECEIVE) $(O_QUEUE)
+	$(COMP) -o $(EXEC_RECEIVE) $(O_RECEIVE) $(O_QUEUE)
+
+$(EXEC_PRACTICE) : $(O_PRACTICE) $(O_PACKET)
+	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET)
+
+$(O_MAIN) : $(C_MAIN) $(H_RECEIVE)
+	$(COMP) -c $(C_MAIN) -o $(O_MAIN)
+
+$(O_RECEIVE) : $(C_RECEIVE) $(H_RECEIVE) $(H_QUEUE)
+	$(COMP) -c $(C_RECEIVE) -o $(O_RECEIVE)
+
+$(O_QUEUE) : $(C_QUEUE) $(H_QUEUE) $(H_PACKET)
+	$(COMP) -c $(C_QUEUE) -o $(O_QUEUE)
+
+$(O_PACKET) : $(C_PACKET) $(H_PACKET)
+	$(COMP) -c $(C_PACKET) -o $(O_PACKET)
+
+$(O_PRACTICE) : $(C_PRACTICE) $(H_PACKET) $(H_QUEUE) $(H_RECEIVE)
+	$(COMP) -c $(C_PRACTICE) -o $(O_PRACTICE)
