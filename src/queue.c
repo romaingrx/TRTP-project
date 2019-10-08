@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 
+int log_out = 0;
 //ONLY FOR TESTING
 typedef struct pkt{
   int WINDOW;
@@ -11,7 +12,7 @@ typedef struct pkt{
 }pkt_t;
 //Temporary package structure testing interface
 int windowsize = 4;
-int n_bits_encode_window = 16;
+int n_bits_encode_window = 5;
 //END OF ONLY FOR TESTING
 
 
@@ -36,7 +37,7 @@ node_t *last = NULL;
 void buffer_add(pkt_t *pkt){
   node_t *newnode = malloc(sizeof(node_t));
   if(newnode == NULL){
-    printf("newnode malloc failed");
+    fprintf(stderr, "[queue.c buffer_add malloc failed]]");
     exit(-1);
   }
   newnode->data = pkt;
@@ -49,7 +50,7 @@ void buffer_add(pkt_t *pkt){
     runner->next = newnode;
   }
   last = newnode;
-  printf("ADDED %d to buffer\n", newnode->data->SEQNUM);
+  if(log_out){printf("ADDED %d to buffer\n", newnode->data->SEQNUM);}
 
 }
 /*
@@ -83,7 +84,8 @@ int decode_pkt(pkt_t *pkt){
 //This function sends a packet to the final destination (the txt).
 //For now it only prints a packet was recieved
 void data_ind(pkt_t *pkt){
-  printf("Successfully recieved data %d\n", pkt->SEQNUM);
+  if(log_out){
+  printf("Successfully recieved data %d\n", pkt->SEQNUM);}
   free(pkt);
 }
 
@@ -101,12 +103,14 @@ void window_inc(){
   else {window_start = 0;}
   if(window_end < pow(2,n_bits_encode_window)){  window_end ++;}
   else {window_end = 0;}
-  printf("[%d,%d]\n", window_start, window_end);
+  if(log_out){
+  printf("[%d,%d]\n", window_start, window_end);}
 }
 
 //This function sends a PTYPE_ACK to the sender
 void send_ack(int n){
-  printf("ACK %d\n", n);
+  if(log_out){
+  printf("ACK %d\n", n);}
   lastack = n;
   if(window_start == n){
     window_inc();
@@ -121,7 +125,8 @@ int data_req(pkt_t *pkt){
   //First we should send decode it.
   if(!decode_pkt(pkt)){
     //If packet not valid;
-    printf("Packet invalid\n");
+    if(log_out){
+    printf("Packet invalid\n");}
     send_ack(lastack);
     return 0;
   }
@@ -129,13 +134,15 @@ int data_req(pkt_t *pkt){
   if(window_start < window_end){
     if(n < window_start || n > window_end){
       //Packet not inside window, ignore it
-      printf("Out of window packet 1\n");
+      if(log_out){
+      printf("Out of window packet 1\n");}
       return 0;
     }
   }
   if(window_start > window_end){
     if(pkt->SEQNUM > window_start || pkt->SEQNUM < window_end){
       //Packet not inside window, ignore it
+      if(log_out){}
       printf("Out of window packet 2\n");
       return 0;
     }
@@ -170,7 +177,7 @@ int data_req(pkt_t *pkt){
     //add it to buffer
     if(head != NULL){
       if(buffer_peak()->SEQNUM == n){
-        printf("Already in buffer\n");
+        if(log_out){printf("Already in buffer\n");}
         return 0;
       }
     }
