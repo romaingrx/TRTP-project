@@ -156,12 +156,6 @@ int data_req(pkt_t *pkt){
       return 0;
     }
   }
-
-
-
-
-
-
   if(n == next){
     //If the packet is in sequence
     next_inc();

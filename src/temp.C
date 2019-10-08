@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
 int log_out = 1;
 // TEMPORARY ZONE
 typedef struct pkt{
@@ -43,6 +43,23 @@ pkt_t* pkt_new(int seq, int valid)
     pkt->valid_packet = valid;
     return pkt;
 }
+int decode_pkt(pkt_t *pkt){
+  return pkt->valid_packet;
+}
+
+void data_ind(pkt_t *pkt, int connection){
+  if(log_out){
+  printf("Successfully recieved data %d\n", pkt->SEQNUM);}
+  free(pkt);
+}
+
+
+
+
+
+
+
+
 
 int init_queue(int n){
   n_connections  = n;
@@ -150,24 +167,130 @@ void buffer_add(pkt_t *pkt, int connection){
   }
   if(log_out){printf("ADDED %d to buffer of connection %d\n", newnode->data->SEQNUM, connection);}
 }
+pkt_t* buffer_peak(int connection){
+  if(head[connection]==NULL){
+    return NULL;
+  }
+  pkt_t* ret = head[connection]->data;
+  return ret;
+}
+
+void buffer_remove(int connection){
+  node_t* oldhead = head[connection];
+  head[connection] = head[connection]->next;
+  free((void*)oldhead);
+}
+
+//END OF BUFFER
+
+void next_inc(int connection){
+  if(next[connection] < pow(2,n_bits_encode_window)){
+    next[connection]++;
+    return;
+  }
+  next = 0;
+}
+
+void window_inc(int connection){
+  if(window_start[connection] < pow(2,n_bits_encode_window)){  window_start[connection] ++;}
+  else {window_start[connection] = 0;}
+  if(window_end[connection] < pow(2,n_bits_encode_window)){  window_end[connection] ++;}
+  else {window_end[connection] = 0;}
+  if(log_out){
+  printf("[%d,%d]\n", window_start[connection], window_end[connection]);}
+}
+
+
+void send_ack(int n,int connection){
+  if(log_out){
+  printf("ACK %d\n", n);}
+  lastack[connection] = n;
+  if(window_start[connection] == n){
+    window_inc(connection);
+  }
+}
 
 
 
-//END OF BUFFER IMPLEMENTATION
+
+int data_req(pkt_t *pkt, int connection){
+  //This function should recieve a bytestream;
+  //First we should send decode it.
+  if(!decode_pkt(pkt)){
+    //If packet not valid;
+    if(log_out){
+    printf("Packet invalid\n");}
+    send_ack(lastack[connection], connection);
+    return 0;
+  }
+  int n = pkt->SEQNUM;
+  if(window_start[connection] < window_end[connection]){
+    if(n < window_start[connection] || n > window_end[connection]){
+      //Packet not inside window, ignore it
+      if(log_out){
+      printf("Out of window packet 1\n");}
+      return 0;
+    }
+  }
+  if(window_start[connection] > window_end[connection]){
+    if(pkt->SEQNUM > window_start[connection] || pkt->SEQNUM < window_end[connection]){
+      //Packet not inside window, ignore it
+      if(log_out){}
+      printf("Out of window packet 2\n");
+      return 0;
+    }
+  }
+  if(n == next[connection]){
+    //If the packet is in sequence
+    next_inc(connection);
+    data_ind(pkt, connection) ;
+    send_ack(n, connection);
+
+    //I recieved a valid packet, now I check in the buffer if I had stored the next Expected
+    //packet. If it is in the buffer I call this function recursively with it. Otherwise the function ends.
+    //do that by calling data_req(buffer.next) (recursion)
+    pkt_t* buf = buffer_peak(connection);
+    if(buf != NULL){
+      if(buf->SEQNUM == next[connection]){
+        buffer_remove(connection);
+        data_req(buf, connection);
+      }
+    }
+
+    return 0;
+  }
+  else{
+    //if the packet is out of sequence BUT inside the recieving window:
+    //add it to buffer
+    if(head[connection] != NULL){
+      if(buffer_peak(connection)->SEQNUM == n){
+        if(log_out){printf("Already in buffer\n");}
+        free(pkt);
+        return 0;
+      }
+    }
+    buffer_add(pkt, connection);
+    send_ack(lastack[connection], connection);
+  }
+}
+
+
+
+
+
+
+
 int main(int argc, char const *argv[]) {
   init_queue(1);
   define_connection(0, 4);
 
   pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(4, 1);
+  pkt_t *pkt1 = pkt_new(2, 1);
+  pkt_t *pkt2 = pkt_new(1, 1);
+  data_req(pkt0,0);
+  data_req(pkt1,0);
+  data_req(pkt2,0);
 
-
-  buffer_add(pkt0,0);
-  buffer_add(pkt1,0);
-
-  free(pkt0);
-  free(pkt1);
-  //Ici j'ai pas free les node donc j'ai 3 alloc?
 
   free_queue();
 
