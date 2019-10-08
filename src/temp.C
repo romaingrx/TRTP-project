@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "linkedlist.h"
 
 int n_bits_encode_window = 5;
 int n_connections = -1;
@@ -16,9 +17,9 @@ int* next=NULL;
 
 int* window_start=NULL;
 int* window_end=NULL;
-
-node_t** head=NULL;
-node_t**last=NULL;
+//
+// node_t** head=NULL;
+// node_t**last=NULL;
 
 int init_queue(int n){
   n_connections  = n;
@@ -67,21 +68,21 @@ int init_queue(int n){
     window_start[i]=0;
     window_end[i]=0;
   }
-  node_t ** err2;
-
-  err2 = (node_t**)malloc(sizeof(node_t*)*n_connections);
-  if(err<0){
-    fprintf(stderr,"init_queue malloc erreur");
-    return(-1);
-  }
-  head = err2;
-
-  err2 = (node_t**)malloc(sizeof(node_t*)*n_connections);
-  if(err<0){
-    fprintf(stderr,"init_queue malloc erreur");
-    return(-1);
-  }
-  last = err2;
+  // node_t ** err2;
+  //
+  // err2 = (node_t**)malloc(sizeof(node_t*)*n_connections);
+  // if(err<0){
+  //   fprintf(stderr,"init_queue malloc erreur");
+  //   return(-1);
+  // }
+  // head = err2;
+  //
+  // err2 = (node_t**)malloc(sizeof(node_t*)*n_connections);
+  // if(err<0){
+  //   fprintf(stderr,"init_queue malloc erreur");
+  //   return(-1);
+  // }
+  // last = err2;
 
   return 0;
 }
@@ -93,8 +94,8 @@ void free_queue(){
   free(window_start);
   free(window_end);
 
-  free(head);
-  free(last);
+  // free(head);
+  // free(last);
 
 }
 
@@ -107,6 +108,7 @@ int main(int argc, char const *argv[]) {
 
   printf("HERE: %d, %d ,%d\n", windowsize[0],windowsize[1],windowsize[2]);
   free_queue();
+
 
   return 0;
 }

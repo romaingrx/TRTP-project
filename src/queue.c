@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-int log_out = 0;
+int log_out = 1;
 //ONLY FOR TESTING
 typedef struct pkt{
   int WINDOW;
@@ -11,8 +11,8 @@ typedef struct pkt{
   int valid_packet;
 }pkt_t;
 //Temporary package structure testing interface
-int windowsize = 4;
-int n_bits_encode_window = 5;
+int windowsize = 7;
+int n_bits_encode_window = 32;
 //END OF ONLY FOR TESTING
 
 
@@ -30,12 +30,12 @@ typedef struct node {
 } node_t;
 
 node_t *head = NULL;
-node_t *last = NULL;
 /*
 * This function adds a packet to the buffer, at the end of it
 */
 void buffer_add(pkt_t *pkt){
   node_t *newnode = malloc(sizeof(node_t));
+  int n = pkt->SEQNUM;
   if(newnode == NULL){
     fprintf(stderr, "[queue.c buffer_add malloc failed]]");
     exit(-1);
@@ -46,10 +46,19 @@ void buffer_add(pkt_t *pkt){
     head = newnode;
   }
   else{
-    node_t *runner = last;
+    if(head->data->SEQNUM > n){
+      newnode->next = head;
+      head=newnode;
+      return;
+    }
+    node_t* runner = head;
+    while(runner->next != NULL  && runner->next->data->SEQNUM < n){
+      runner = runner->next;
+    }
+    newnode->next = runner->next;
     runner->next = newnode;
   }
-  last = newnode;
+
   if(log_out){printf("ADDED %d to buffer\n", newnode->data->SEQNUM);}
 
 }
@@ -178,6 +187,7 @@ int data_req(pkt_t *pkt){
     if(head != NULL){
       if(buffer_peak()->SEQNUM == n){
         if(log_out){printf("Already in buffer\n");}
+        free(pkt);
         return 0;
       }
     }
@@ -211,32 +221,29 @@ int main(int argc, char const *argv[]) {
   window_end=windowsize-1;
 
   pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(1, 1);
-  pkt_t *pkt2 = pkt_new(2, 1);
-  pkt_t *pkt3 = pkt_new(3, 1);
-  pkt_t *pkt4 = pkt_new(4, 1);
-  pkt_t *pkt5 = pkt_new(0, 1);
+  pkt_t *pkt1 = pkt_new(5, 1);
+  pkt_t *pkt2 = pkt_new(5, 1);
+  pkt_t *pkt3 = pkt_new(4, 1);
+  pkt_t *pkt4 = pkt_new(3, 1);
+  pkt_t *pkt5 = pkt_new(2, 1);
   pkt_t *pkt6 = pkt_new(1, 1);
-  pkt_t *pkt7 = pkt_new(2, 1);
-  pkt_t *pkt8 = pkt_new(3, 1);
-  pkt_t *pkt9 = pkt_new(4, 1);
-  pkt_t *pkt10 = pkt_new(0,1);
+  // pkt_t *pkt7 = pkt_new(7, 1);
+  // pkt_t *pkt8 = pkt_new(3, 1);
+  // pkt_t *pkt9 = pkt_new(4, 1);
+  // pkt_t *pkt10 = pkt_new(0,1);
 
   data_req(pkt0);
   data_req(pkt1);
-  data_req(pkt3);
-  data_req(pkt3);
   data_req(pkt2);
+  data_req(pkt3);
+  data_req(pkt4);
 
-  //data_req(pkt1);
-  //data_req(pkt5);
-  /*data_req(pkt4);
   data_req(pkt5);
   data_req(pkt6);
-  data_req(pkt7);
-  data_req(pkt8);
-  data_req(pkt9);
-  data_req(pkt10);*/
+  // data_req(pkt7);
+  // data_req(pkt8);
+  // data_req(pkt9);
+  // data_req(pkt10);
 
 
   return 0;
