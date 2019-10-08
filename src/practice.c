@@ -19,6 +19,7 @@ void test_encode();
 void test_pointer_struct();
 
 
+
 int main(int argc, char const *argv[]) {
     struct sockaddr_in6 *ipv6;
     int fd;

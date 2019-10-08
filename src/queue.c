@@ -43,6 +43,7 @@ pkt_t* pkt_new(int seq, int valid)
     pkt->valid_packet = valid;
     return pkt;
 }
+
 int decode_pkt(pkt_t *pkt){
   return pkt->valid_packet;
 }
@@ -52,7 +53,7 @@ void data_ind(pkt_t *pkt, int connection){
   printf("Successfully recieved data %d\n", pkt->SEQNUM);}
   free(pkt);
 }
-
+/
 
 
 
