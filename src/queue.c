@@ -53,7 +53,7 @@ void data_ind(pkt_t *pkt, int connection){
   printf("Successfully recieved data %d\n", pkt->SEQNUM);}
   free(pkt);
 }
-/
+//
 
 
 
