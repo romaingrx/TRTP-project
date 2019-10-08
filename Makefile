@@ -12,17 +12,20 @@ TEST_NAME = test
 RECIEVE_NAME = recieve
 MAIN_NAME = main
 
+VAR = default
+
 
 default : practice_exec
 	@./$(PRACTICE_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
-test : test_exec 
+test : test_exec
 	@./$(TEST_NAME) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
+# UTILISER 'make main VAR=""' en mettant les arguments de la main dans les crochets de VAR
 main : main_exec
-	@./$(MAIN_NAME) 2> $(ERR_FILE)
+	@./$(MAIN_NAME) $(VAR) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
 ben : recieve_exec
