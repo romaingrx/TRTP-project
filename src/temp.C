@@ -99,7 +99,6 @@ void free_queue(){
 }
 
 
-
 int main(int argc, char const *argv[]) {
   init_queue(3);
   windowsize[0]=1;
