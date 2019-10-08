@@ -22,18 +22,17 @@ VAR = "192.168.1.5 7903"
 
 COMP = @gcc
 
-
-
-
-
-
 default : $(EXEC_PRACTICE)
 	@./$(EXEC_PRACTICE) $(VAR) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
+	@make o_clean
 
-clean :
-	@rm -f *.o
-	@rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE) *.o
+clean : o_clean exec_clean
+
+o_clean :
+	@rm -f *.o *.out
+exec_clean :
+	@rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE)
 
 
 $(EXEC_MAIN) : $(O_MAIN) $(O_RECEIVE)

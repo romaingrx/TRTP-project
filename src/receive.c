@@ -11,9 +11,9 @@
 
 #include <arpa/inet.h>
 
-int loge = 0;
+int print = 0;
 
-int IPV6_translater(const char* hostname, struct sockaddr_in6 *retipv6){
+int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6){
     int status;
     struct addrinfo hints, *ai;
     memset(&hints, 0, sizeof(hints));
@@ -25,9 +25,9 @@ int IPV6_translater(const char* hostname, struct sockaddr_in6 *retipv6){
         fprintf(stderr, "[IPV6] getaddrinfo: %s\n", gai_strerror(status));
         return -1;
     }
-    struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)ai->ai_addr;
+    ipv6 = (struct sockaddr_in6 *)ai->ai_addr;
 
-    if(loge == 0){
+    if(print == 0){
     void *addr;
     char ipstr[INET6_ADDRSTRLEN];
     addr = &(ipv6->sin6_addr);
@@ -36,9 +36,29 @@ int IPV6_translater(const char* hostname, struct sockaddr_in6 *retipv6){
     printf(" IPv%c: %s\n", ipver, ipstr);
     }
 
-    retipv6 = ipv6;
     freeaddrinfo(ai);
     return 0;
+}
+
+int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
+                struct sockaddr_in6 *dest_addr, const int dest_port){
+
+    int sockfd = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP); // IPv6, datagrams, UDP
+    if(sockfd == -1){fprintf(stderr, "[socket_init] Impossible de créer un socket.\n"); return -1;}
+
+    // Bind l'adresse source avec le socket
+    if(src_addr != NULL && src_port > 0){
+        src_addr->sin6_port = htons(src_port);
+        if(bind(sockfd,(const struct sockaddr *)src_addr, (socklen_t)sizeof(struct sockaddr_in6)) < 0){ fprintf(stderr, "[socket_init] Impossible de bind la source \n"); return -1;}
+    }
+
+    // Connect l'adresse de destination avec le socket
+    if(dest_addr != NULL && dest_port > 0){
+        dest_addr->sin6_port = htons(dest_port);
+        if(connect(sockfd,(const struct sockaddr *)dest_addr, (socklen_t)sizeof(struct sockaddr_in6)) < 0){ fprintf(stderr, "[socket_init] Impossible de connect la destination \n"); return -1;}
+    }
+
+    return sockfd;
 }
 
 int receive(char* hostname, int port, char* filename){

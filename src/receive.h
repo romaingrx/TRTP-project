@@ -1,14 +1,5 @@
 #include <netinet/in.h>
 
-/*
- * Initialise le socket
- * @return : -1 si une erreur survient
- *          le file descriptor du socket sinon
- *
- */
-
-static int socket_init();
-
 
 /*
  * Transforme l'adresse en IPv6
@@ -17,4 +8,14 @@ static int socket_init();
  *
  */
 
-int IPV6_translater(const char* hostname, struct sockaddr_in6 *retipv6);
+int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6);
+
+/*
+ * Crée un socket, bind la source et connect la destination
+ * @return : -1 si une erreur survient
+ *           sinon retourne le file descriptor du socket
+ *
+ */
+
+ int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
+                 struct sockaddr_in6 *dest_addr, const int dest_port);

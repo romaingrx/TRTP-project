@@ -21,6 +21,7 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
     struct sockaddr_in6 *ipv6;
+    int fd;
     int a = IPV6_translater("192.168.5.1", ipv6);
   return 0;
 }
