@@ -1,4 +1,6 @@
 #include "packet_interface.h"
+#include "queue.h"
+#include "receive.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +9,9 @@
 #include <time.h>
 #include <math.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h> // sockaddr_in6
+#include <netdb.h> // addrinfo
 
 void test_decode_header();
 void test_decode_all();
@@ -15,12 +20,8 @@ void test_pointer_struct();
 
 
 int main(int argc, char const *argv[]) {
-  // test_decode_header();
-  // test_decode_all();
-  // test_pointer_struct();
-  // test_encode();
-  printf("%s\n", "PROUT");
-
+    struct sockaddr_in6 *ipv6;
+    int a = IPV6_translater("192.168.5.1", ipv6);
   return 0;
 }
 

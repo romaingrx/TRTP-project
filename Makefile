@@ -28,7 +28,7 @@ COMP = @gcc
 
 
 default : $(EXEC_PRACTICE)
-	@./$(EXEC_PRACTICE) 2> $(ERR_FILE)
+	@./$(EXEC_PRACTICE) $(VAR) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 
 clean :
@@ -42,8 +42,8 @@ $(EXEC_MAIN) : $(O_MAIN) $(O_RECEIVE)
 $(EXEC_RECEIVE) : $(O_RECEIVE) $(O_QUEUE)
 	$(COMP) -o $(EXEC_RECEIVE) $(O_RECEIVE) $(O_QUEUE)
 
-$(EXEC_PRACTICE) : $(O_PRACTICE) $(O_PACKET)
-	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET)
+$(EXEC_PRACTICE) : $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE)
+	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE)
 
 $(O_MAIN) : $(C_MAIN) $(H_RECEIVE)
 	$(COMP) -c $(C_MAIN) -o $(O_MAIN)
