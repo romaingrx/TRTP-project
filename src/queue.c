@@ -221,13 +221,13 @@ int main(int argc, char const *argv[]) {
   window_end=windowsize-1;
 
   pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(5, 1);
-  pkt_t *pkt2 = pkt_new(5, 1);
+  pkt_t *pkt1 = pkt_new(4, 1);
+  pkt_t *pkt2 = pkt_new(4, 1);
   pkt_t *pkt3 = pkt_new(4, 1);
   pkt_t *pkt4 = pkt_new(3, 1);
   pkt_t *pkt5 = pkt_new(2, 1);
   pkt_t *pkt6 = pkt_new(1, 1);
-  // pkt_t *pkt7 = pkt_new(7, 1);
+  pkt_t *pkt7 = pkt_new(5, 1);
   // pkt_t *pkt8 = pkt_new(3, 1);
   // pkt_t *pkt9 = pkt_new(4, 1);
   // pkt_t *pkt10 = pkt_new(0,1);
@@ -240,7 +240,7 @@ int main(int argc, char const *argv[]) {
 
   data_req(pkt5);
   data_req(pkt6);
-  // data_req(pkt7);
+   data_req(pkt7);
   // data_req(pkt8);
   // data_req(pkt9);
   // data_req(pkt10);
