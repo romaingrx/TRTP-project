@@ -22,6 +22,7 @@ void test_pointer_struct();
 int main(int argc, char const *argv[]) {
     init_queue(1);
     define_connection(0, 10);
+    add_queue();
 
     // pkt_t *pkt0 = pkt_generate();
     // pkt_t *pkt1 = pkt_generate(1);
@@ -30,9 +31,14 @@ int main(int argc, char const *argv[]) {
     // data_req(pkt1,0);
     // data_req(pkt2,0);
 
-    for(int i = 7; i>=0; i--){
+    for(int i = 3; i>=0; i--){
       pkt_t * packet = pkt_generate(i);
       data_req(packet,0);
+    }
+    printf("\n\n\n");
+    for(int i = 3; i>=0; i--){
+      pkt_t * packet = pkt_generate(i);
+      data_req(packet,1);
     }
 
     free_queue();

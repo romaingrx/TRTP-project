@@ -122,6 +122,64 @@ int init_queue(int n){
 }
 
 
+int add_queue(){
+  int oldn = n_connections;
+  n_connections++;
+
+  int* err;
+  err = (int*)realloc(windowsize, sizeof(int)*n_connections);
+  if(err<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  windowsize = err;
+
+  err = (int*)realloc(lastack, sizeof(int)*n_connections);
+  if(err<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  lastack = err;
+
+  err = (int*)realloc(next, sizeof(int)*n_connections);
+  if(err<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  next = err;
+
+  err = (int*)realloc(window_start, sizeof(int)*n_connections);
+  if(err<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  window_start = err;
+
+  err = (int*)realloc(window_end, sizeof(int)*n_connections);
+  if(err<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+
+  window_end = err;
+
+  // for(int i=0; i<n; i++){
+  //   windowsize[i]=4; //Should be changed by program
+  //   lastack[i]=-1;
+  //   next[i]=0;
+  //   window_start[i]=0;
+  //   window_end[i]=0;
+  // }
+  head = (node_t**)realloc(head, sizeof(node_t*)*n_connections);
+  if(head<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+
+  return 0;
+}
+
+
 
 //This function initialises a connection and all its variables
 int define_connection(int con_indice, int window_size){
