@@ -37,6 +37,8 @@ pkt_t* pkt_generate(int seq, int valid)
   pkt_t packet = pkt_new();
   packet->SEQNUM = seq;
   pkt_set_payload(packet, "Coucou", 7);
+  return packet;
+
 
 }
 
@@ -298,20 +300,20 @@ int data_req(pkt_t *pkt, int connection){
 
 
 
-
-int main(int argc, char const *argv[]) {
-  init_queue(1);
-  define_connection(0, 4);
-
-  pkt_t *pkt0 = pkt_new(0, 1);
-  pkt_t *pkt1 = pkt_new(2, 1);
-  pkt_t *pkt2 = pkt_new(2, 1);
-  data_req(pkt0,0);
-  data_req(pkt1,0);
-  data_req(pkt2,0);
-
-  free_queue();
-
-
-  return 0;
-}
+//
+// int main(int argc, char const *argv[]) {
+//   init_queue(1);
+//   define_connection(0, 4);
+//
+//   pkt_t *pkt0 = pkt_new(0, 1);
+//   pkt_t *pkt1 = pkt_new(2, 1);
+//   pkt_t *pkt2 = pkt_new(2, 1);
+//   data_req(pkt0,0);
+//   data_req(pkt1,0);
+//   data_req(pkt2,0);
+//
+//   free_queue();
+//
+//
+//   return 0;
+// }
