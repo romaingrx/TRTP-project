@@ -19,7 +19,7 @@ int main() {
 	struct sockaddr_in servaddr, cliaddr;
 
 	// Creating socket file descriptor
-	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {//
 		perror("socket creation failed");
 		exit(EXIT_FAILURE);
 	}
