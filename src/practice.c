@@ -19,13 +19,14 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
     init_queue(1);
-    define_connection(0, 4);
+    define_connection(0);
 
-    for(int i = 0; i<10; i++){
-      pkt_t * packet = pkt_generate(i);
-      if(i>5){
-        packet->WINDOW = 5;
-      }
+    for(int i = 0; i<4; i++){
+      pkt_t * packet = pkt_generate(i,5);
+      data_req(packet,0);
+    }
+    for(int i = 4; i<7; i++){
+      pkt_t * packet = pkt_generate(i,8);
       data_req(packet,0);
     }
 

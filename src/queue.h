@@ -34,13 +34,13 @@ int add_queue();
 int get_nconnections();
 
 //For testing:
-pkt_t* pkt_generate(int seq);
+pkt_t* pkt_generate(int seq, int wid);
 
 //Definit la taille de window d'une des connections,
 //et initialise toutes les autres variables internes de cette connection.
 //@con_indice: le numéro de la connection à initialiser (0,1,2,..,n-1)
 //@window_Size: la taille de la fenêtre de cette connection
-int define_connection(int con_indice, int window_size);
+int define_connection(int con_indice);
 
 //Free la queue, à appeler en fin d'exécution
 //free aussi chaque buffer interne

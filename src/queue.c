@@ -35,11 +35,11 @@ int* window_end=NULL;
 node_t** head;
 
 
-pkt_t* pkt_generate(int seq)
+pkt_t* pkt_generate(int seq, int wid)
 {
   pkt_t* packet = pkt_new();
   packet->SEQNUM = seq;
-  packet->WINDOW = 4;
+  packet->WINDOW = wid;
   return packet;
 
 
@@ -187,7 +187,8 @@ int add_queue(){
 
 
 //This function initialises a connection and all its variables
-int define_connection(int con_indice, int window_size){
+int define_connection(int con_indice){
+  int window_size = 2; //default
   windowsize[con_indice] = window_size;
   lastack[con_indice]=-1;
   next[con_indice]=0;
