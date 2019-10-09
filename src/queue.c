@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "packet_interface.h"
 int log_out = 1;
 // TEMPORARY ZONE
-typedef struct pkt{
-  int WINDOW;
-  int SEQNUM;
-  int valid_packet;
-}pkt_t;
+// typedef struct pkt{
+//   int WINDOW;
+//   int SEQNUM;
+//   int valid_packet;
+// }pkt_t;
 
 // END OF TEMPORARY ZONE
 
@@ -31,27 +32,29 @@ node_t** head;
 
 
 //TOUT EN DESSOUS ICI EST JUSTE POUR FAIRE DES TESTS
-pkt_t* pkt_new(int seq, int valid)
+pkt_t* pkt_generate(int seq, int valid)
 {
-    pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
-    if (pkt == NULL) {
-      perror("Erreur lors du malloc du package");
-      return NULL;
-    }
-    pkt->WINDOW = windowsize[0];
-    pkt->SEQNUM = seq;
-    pkt->valid_packet = valid;
-    return pkt;
+  pkt_t packet = pkt_new();
+  packet->SEQNUM = seq;
+  pkt_set_payload(packet, "Coucou", 7);
+
 }
 
 int decode_pkt(pkt_t *pkt){
-  return pkt->valid_packet;
+  return 1;
+}
+
+void free_pkt(pkt_t* pkt){
+  // if(pkt->PAYLOAD != NULL){
+  //   free(PAYLOAD);
+  // }
+  free(pkt);
 }
 
 void data_ind(pkt_t *pkt, int connection){
   if(log_out){
   printf("Successfully recieved data %d\n", pkt->SEQNUM);}
-  free(pkt);
+  free_pkt(pkt);
 }
 //
 
@@ -118,16 +121,7 @@ int init_queue(int n){
   return 0;
 }
 
-void free_queue(){
-  free(windowsize);
-  free(lastack);
-  free(next);
-  free(window_start);
-  free(window_end);
 
-  free(head);
-
-}
 
 //This function initialises a connection and all its variables
 int define_connection(int con_indice, int window_size){
@@ -182,8 +176,32 @@ void buffer_remove(int connection){
   free((void*)oldhead);
 }
 
+void free_buffer(int connection){
+  while(head[connection] != NULL){
+    free_pkt(head[connection]->data);
+    node_t* oldhead = head[connection];
+    head[connection]=oldhead->next;
+    free(oldhead);
+  }
+}
+
 //END OF BUFFER
 
+
+void free_queue(){
+  free(windowsize);
+  free(lastack);
+  free(next);
+  free(window_start);
+  free(window_end);
+
+  for(int i =0; i<n_connections;i++){
+    free_buffer(i);
+  }
+
+  free(head);
+
+}
 void next_inc(int connection){
   if(next[connection] < pow(2,n_bits_encode_window)){
     next[connection]++;
@@ -266,7 +284,7 @@ int data_req(pkt_t *pkt, int connection){
     if(head[connection] != NULL){
       if(buffer_peak(connection)->SEQNUM == n){
         if(log_out){printf("Already in buffer\n");}
-        free(pkt);
+        free_pkt(pkt);
         return 0;
       }
     }
@@ -287,11 +305,10 @@ int main(int argc, char const *argv[]) {
 
   pkt_t *pkt0 = pkt_new(0, 1);
   pkt_t *pkt1 = pkt_new(2, 1);
-  pkt_t *pkt2 = pkt_new(1, 1);
+  pkt_t *pkt2 = pkt_new(2, 1);
   data_req(pkt0,0);
   data_req(pkt1,0);
   data_req(pkt2,0);
-
 
   free_queue();
 

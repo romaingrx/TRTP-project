@@ -1,9 +1,10 @@
 Linksimulator-master
 TODO-Experimental.md
 ex
-test 
+test
 main
 practice
+src/practice.c
 *.o
 *.out
 test

@@ -21,14 +21,17 @@ void send_ack(int n,int connection)
 //@n: nombre de connections entrantes
 int init_queue(int n);
 
-//Free la queue, à appeler en fin d'exécution
-void free_queue();
+
 
 //Definit la taille de window d'une des connections,
 //et initialise toutes les autres variables internes de cette connection.
 //@con_indice: le numéro de la connection à initialiser (0,1,2,..,n-1)
 //@window_Size: la taille de la fenêtre de cette connection
 int define_connection(int con_indice, int window_size);
+
+//Free la queue, à appeler en fin d'exécution
+//free aussi chaque buffer interne
+void free_queue();
 
 //LA PERLE NOIRE de cette classe
 //prend un **BYTESTREAM** en entrée, et un numéro de connection
@@ -59,6 +62,11 @@ pkt_t* buffer_peak(int connection);
 //Appeler buffer_peak pour récuperer ce paquet avant de le supprimer
 //@connection: indice de la connection
 void buffer_remove(int connection);
+
+/*
+* Free le buffer, cette fonction est appelée par free_queue()
+*/
+void buffer_free(int connection);
 
 //Incrémente la variable next d'une connections
 //En tenant compte des limtes en indices (2¨n)
