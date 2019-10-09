@@ -21,7 +21,8 @@ void send_ack(int n,int connection);
 //@n: nombre de connections entrantes
 int init_queue(int n);
 
-
+//For testing:
+pkt_t* pkt_generate(int seq);
 
 //Definit la taille de window d'une des connections,
 //et initialise toutes les autres variables internes de cette connection.

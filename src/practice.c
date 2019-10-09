@@ -21,14 +21,19 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
     init_queue(1);
-    define_connection(0, 4);
+    define_connection(0, 10);
 
-    pkt_t *pkt0 = pkt_new(0, 1);
-    pkt_t *pkt1 = pkt_new(2, 1);
-    pkt_t *pkt2 = pkt_new(2, 1);
-    data_req(pkt0,0);
-    data_req(pkt1,0);
-    data_req(pkt2,0);
+    // pkt_t *pkt0 = pkt_generate();
+    // pkt_t *pkt1 = pkt_generate(1);
+    // pkt_t *pkt2 = pkt_generate(2);
+    // data_req(pkt0,0);
+    // data_req(pkt1,0);
+    // data_req(pkt2,0);
+
+    for(int i = 7; i>=0; i--){
+      pkt_t * packet = pkt_generate(i);
+      data_req(packet,0);
+    }
 
     free_queue();
 

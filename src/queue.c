@@ -31,12 +31,10 @@ int* window_end=NULL;
 node_t** head;
 
 
-//TOUT EN DESSOUS ICI EST JUSTE POUR FAIRE DES TESTS
-pkt_t* pkt_generate(int seq, int valid)
+pkt_t* pkt_generate(int seq)
 {
   pkt_t* packet = pkt_new();
   packet->SEQNUM = seq;
-  pkt_set_payload(packet, "Coucou", 7);
   return packet;
 
 
@@ -249,7 +247,8 @@ int data_req(pkt_t *pkt, int connection){
     if(n < window_start[connection] || n > window_end[connection]){
       //Packet not inside window, ignore it
       if(log_out){
-      printf("Out of window packet 1\n");}
+      printf("Out of window packet 1: %d\n", n);}
+      free_pkt(pkt);
       return 0;
     }
   }
@@ -257,7 +256,9 @@ int data_req(pkt_t *pkt, int connection){
     if(pkt->SEQNUM > window_start[connection] || pkt->SEQNUM < window_end[connection]){
       //Packet not inside window, ignore it
       if(log_out){}
+
       printf("Out of window packet 2\n");
+      free_pkt(pkt);
       return 0;
     }
   }
