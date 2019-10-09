@@ -34,7 +34,7 @@ node_t** head;
 //TOUT EN DESSOUS ICI EST JUSTE POUR FAIRE DES TESTS
 pkt_t* pkt_generate(int seq, int valid)
 {
-  pkt_t packet = pkt_new();
+  pkt_t* packet = pkt_new();
   packet->SEQNUM = seq;
   pkt_set_payload(packet, "Coucou", 7);
   return packet;
