@@ -151,15 +151,16 @@ void buffer_add(pkt_t *pkt, int connection){
     if(head[connection]->data->SEQNUM >n){
       newnode->next = head[connection];
       head[connection]=newnode;
-      return;
+
     }
+    else{
     node_t *runner = head[connection];
     while(runner->next!=NULL && runner->next->data->SEQNUM <n){
       runner = runner->next;
     }
     newnode->next = runner->next;
     runner->next = newnode;
-  }
+  }}
   if(log_out){printf("ADDED %d to buffer of connection %d\n", newnode->data->SEQNUM, connection);}
 }
 pkt_t* buffer_peak(int connection){
@@ -275,7 +276,8 @@ int data_req(pkt_t *pkt, int connection){
     if(buf != NULL){
       if(buf->SEQNUM == next[connection]){
         buffer_remove(connection);
-        data_req(buf, connection);
+        data_req(buf, connection);//Peter van Roy tmtc
+
       }
     }
 
