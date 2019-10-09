@@ -14,7 +14,7 @@ void data_ind(pkt_t *pkt, int connection);
 //correspondante
 
 //ATTENTION ELLE NE MARCHE PAS ENCORE HOHO
-void send_ack(int n,int connection)
+void send_ack(int n,int connection);
 
 
 //Initialise cette interface, à appeler dans la main
