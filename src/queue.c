@@ -15,6 +15,10 @@ int log_out = 1;
 
 int n_bits_encode_window = 5;
 int n_connections = -1;
+
+int get_nconnections(){
+  return n_connections;
+}
 typedef struct node {
     pkt_t* data;
     struct node * next;
@@ -35,6 +39,7 @@ pkt_t* pkt_generate(int seq)
 {
   pkt_t* packet = pkt_new();
   packet->SEQNUM = seq;
+  packet->WINDOW = 4;
   return packet;
 
 
@@ -301,6 +306,14 @@ int data_req(pkt_t *pkt, int connection){
     send_ack(lastack[connection], connection);
     return 0;
   }
+
+  //TODO (rapide):
+  if(pkt->WINDOW != windowsize[connection]){
+    window_end[connection] = window_start[connection]+pkt->WINDOW -1;
+    windowsize[connection] = pkt->WINDOW;
+  }
+
+
   int n = pkt->SEQNUM;
   if(window_start[connection] < window_end[connection]){
     if(n < window_start[connection] || n > window_end[connection]){

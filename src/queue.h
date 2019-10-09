@@ -21,7 +21,17 @@ void send_ack(int n,int connection);
 //@n: nombre de connections entrantes
 int init_queue(int n);
 
-int add_queue();;
+//Ajoute une connection entrante. ATTENTION, il faut appeler define_connection juste après
+//Exemple d'utilisation:
+// init queue(2);
+// define_connection(0,3);
+// define_connection(1,4)
+// int add_queue();
+// define_connection(get_nconnections-1, windowsize );
+int add_queue();
+
+//Getter de la variable n connections
+int get_nconnections();
 
 //For testing:
 pkt_t* pkt_generate(int seq);

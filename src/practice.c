@@ -17,28 +17,16 @@ void test_decode_all();
 void test_encode();
 void test_pointer_struct();
 
-
-
 int main(int argc, char const *argv[]) {
     init_queue(1);
-    define_connection(0, 10);
-    add_queue();
+    define_connection(0, 4);
 
-    // pkt_t *pkt0 = pkt_generate();
-    // pkt_t *pkt1 = pkt_generate(1);
-    // pkt_t *pkt2 = pkt_generate(2);
-    // data_req(pkt0,0);
-    // data_req(pkt1,0);
-    // data_req(pkt2,0);
-
-    for(int i = 3; i>=0; i--){
+    for(int i = 0; i<10; i++){
       pkt_t * packet = pkt_generate(i);
+      if(i>5){
+        packet->WINDOW = 5;
+      }
       data_req(packet,0);
-    }
-    printf("\n\n\n");
-    for(int i = 3; i>=0; i--){
-      pkt_t * packet = pkt_generate(i);
-      data_req(packet,1);
     }
 
     free_queue();
