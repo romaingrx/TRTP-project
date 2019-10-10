@@ -195,6 +195,7 @@ int define_connection(int con_indice){
   window_start[con_indice]=0;
   window_end[con_indice]=window_size-1;
   head[con_indice]=NULL;
+  return 0;
 }
 
 
