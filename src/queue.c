@@ -26,7 +26,7 @@ typedef struct node {
 
 
 int* windowsize = NULL;
-int* lastack=NULL;
+pkt_t** lastack=NULL;
 int* next=NULL;
 
 int* window_start=NULL;
@@ -81,12 +81,11 @@ int init_queue(int n){
   }
   windowsize = err;
 
-  err = (int*)malloc(sizeof(int)*n_connections);
-  if(err<0){
+  lastack = (pkt_t**)malloc(sizeof(pkt_t*)*n_connections);
+  if(lastack<0){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
-  lastack = err;
 
   err = (int*)malloc(sizeof(int)*n_connections);
   if(err<0){
@@ -112,7 +111,7 @@ int init_queue(int n){
 
   for(int i=0; i<n; i++){
     windowsize[i]=4; //Should be changed by program
-    lastack[i]=-1;
+    lastack[i]=NULL;
     next[i]=0;
     window_start[i]=0;
     window_end[i]=0;
@@ -139,12 +138,11 @@ int add_queue(){
   }
   windowsize = err;
 
-  err = (int*)realloc(lastack, sizeof(int)*n_connections);
+  lastack= (pkt_t**)realloc(lastack, sizeof(pkt_t*)*n_connections);
   if(err<0){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
-  lastack = err;
 
   err = (int*)realloc(next, sizeof(int)*n_connections);
   if(err<0){
@@ -190,7 +188,7 @@ int add_queue(){
 int define_connection(int con_indice){
   int window_size = 2; //default
   windowsize[con_indice] = window_size;
-  lastack[con_indice]=-1;
+  lastack[con_indice]=NULL;
   next[con_indice]=0;
   window_start[con_indice]=0;
   window_end[con_indice]=window_size-1;
@@ -286,10 +284,17 @@ void window_inc(int connection){
 }
 
 
-void send_ack(int n,int connection){
+void send_ack(pkt_t* packet,int connection){
+  if(packet == NULL){
+    if(log_out){
+      printf("No packet to ack;\n");
+      return;
+    }
+  }
+  int n = packet->SEQNUM;
   if(log_out){
   printf("ACK %d\n", n);}
-  lastack[connection] = n;
+  lastack[connection] = packet;
   if(window_start[connection] == n){
     window_inc(connection);
   }
@@ -299,6 +304,7 @@ void send_ack(int n,int connection){
 
 
 int data_req(pkt_t *pkt, int connection){
+
   //This function should recieve a bytestream;
   //First we should send decode it.
   if(!decode_pkt(pkt)){
@@ -339,8 +345,9 @@ int data_req(pkt_t *pkt, int connection){
   if(n == next[connection]){
     //If the packet is in sequence
     next_inc(connection);
+    send_ack(pkt, connection);
     data_ind(pkt, connection) ;
-    send_ack(n, connection);
+
 
     //I recieved a valid packet, now I check in the buffer if I had stored the next Expected
     //packet. If it is in the buffer I call this function recursively with it. Otherwise the function ends.
@@ -366,7 +373,9 @@ int data_req(pkt_t *pkt, int connection){
         return 0;
       }
     }
+    printf("ICI\n"); fflush(stdout);
     buffer_add(pkt, connection);
+    printf("ICI\n"); fflush(stdout);
     send_ack(lastack[connection], connection);
   }
 }

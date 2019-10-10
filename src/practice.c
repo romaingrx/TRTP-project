@@ -18,17 +18,14 @@ void test_encode();
 void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
-    int err;
-    struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));
-    err = IPV6_translater(argv[1], ipv6);
-    int sockfd = socket_init(ipv6, atoi(argv[2]), NULL, -1);
-
-    char *buffer = malloc(1024);
-    err = recv(sockfd, buffer, 1024, 0);
-    printf("%s\n", buffer);
-
-    free(buffer);
-    free(ipv6);
+  init_queue(1);
+  define_connection(0);
+  //pkt_t* packet = pkt_generate(0,4);
+  //data_req(packet,0);
+  for(int i = 3; i>=0; i--){
+    pkt_t* packet = pkt_generate(i,4);
+    data_req(packet,0 );
+  }
   return 0;
 }
 
