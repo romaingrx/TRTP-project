@@ -4,7 +4,6 @@ ex
 test
 main
 practice
-src/practice.c
 *.o
 *.out
 test

@@ -9,6 +9,13 @@ Objectifs
 TODO
 =================
 
+#### Global ####
+
+<!-- ```c
+listen(int sockfd, int backlog);
+```
+- backlog donne le nombre d'entrées maximales à recevoir. -->
+
 #### Progs ####
 
 
