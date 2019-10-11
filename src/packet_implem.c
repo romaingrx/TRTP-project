@@ -12,18 +12,22 @@
 /* Your code will be inserted here */
 
 /* Package structure */
+
+
+/* Package structure */
 // struct __attribute__((__packed__)) pkt {
-//     unsigned int TYPE : 2;
+//     unsigned WINDOW : 5;
 //     unsigned int TR : 1;
-//     unsigned int WINDOW : 5;
-//     uint8_t SEQNUM;
+//     unsigned int TYPE : 2;
+//     uint16_t LENGTH : 15;
 //     unsigned int L : 1;
-//     uint16_t LENGTH;
+//     uint8_t SEQNUM;
 //     uint32_t TIMESTAMP;
 //     uint32_t CRC1;
 //     char * PAYLOAD;
 //     uint32_t CRC2;
 // };
+
 
 pkt_t* pkt_new()
 {
@@ -97,7 +101,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 
     /* Vérifie la validité du packet */
     if(!len){return E_UNCONSISTENT;} // 0 bit reçu
-    if(len < 4){return E_NOHEADER;} // < 32 bits reçu, header incorrect
+    if(len < 11){return E_NOHEADER;} // < 11 bytes reçu, header incorrect
 
     status = header_decode(pkt, data, &offset);
     if(status != PKT_OK){return status;}
@@ -108,6 +112,8 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
     offset += 4;
 
     uint16_t length = pkt_get_length(pkt);
+    uint8_t l = pkt_get_l(pkt);
+    
     char *PAYLOAD = malloc(length);
     memcpy(PAYLOAD, (void*)&data[offset], length);
     status = pkt_set_payload(pkt, PAYLOAD, length);
@@ -134,6 +140,9 @@ size_t header_encode(const pkt_t *pkt,char *buf){
         uint8_t *length_bytes = malloc(2);
         if(varuint_encode(pkt_get_length(pkt), length_bytes, 2) == -1){return 0;}
         memcpy(&buf[1], (void*)&length_bytes[0], 2);
+
+        uint16_t ret;
+        varuint_decode((uint8_t*)&buf[1], 2, &ret);
         free(length_bytes);
     } else {
         offset = 2;
@@ -256,6 +265,8 @@ pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
         fprintf(stderr, "[pkt_set_length] Length (%u) plus grand que MAX_PAYLOAD_SIZE (%u) \n", length, MAX_PAYLOAD_SIZE);
         return E_LENGTH;}
     pkt->LENGTH = length;
+    pkt_set_l(pkt, varuint_predict_len(length));
+
     return PKT_OK;
 }
 
@@ -304,32 +315,14 @@ ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
     if(L == 0){
         *retval = (uint16_t)data[0];
     }else if(L == 1){
-        uint16_t NBO= (uint16_t)((data[0] & 0b01111111) << 8); // Les 7 premiers bits
-        NBO += (uint8_t)(data[1]); // Les 8 bits suivants
-        *retval = ntohs(NBO);
+        *retval  = (uint16_t)data[0];
+        *retval += (uint16_t)(data[1]<<8);
+        *retval  = ntohs(*retval);
+        *retval -= pow(2,15);
     }
     return L;
 }
 
-ssize_t varuint_decode_experimental(const uint8_t *data, const size_t len, uint16_t *retval)
-{
-    if(len != 1 && len != 2){
-        fprintf(stderr, "[varuint_decode] Dimension %zu différente de {1, 2} byte(s)\n", len);
-        return -1;}
-    uint8_t L = varuint_len(data);
-    if(L == 1){
-        *retval = (uint16_t)data[0];
-    }else if(L == 2){
-            uint16_t NBO;
-        if (ntohs(1) == 1){
-            NBO += (uint8_t)(data[1]); // Les 8 bits suivants
-            *retval = ntohs(NBO);
-        } else {
-            NBO = (uint16_t)(data[0] & 0b01111111);
-        }
-    }
-    return L;
-}
 
 ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
 {
@@ -345,11 +338,12 @@ ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
         return -1;} // Dimension de data trop petite pour stocker val
     if(L == 0){
         data[0] = (uint8_t)val;
-    }else if(L == 1){
+    }else if(L == 1){ // data[0] contiendra toujours le L
+        val += pow(2,15);
         val = htons(val);
-        data[0]  = (uint8_t)((val >> 8) & 0b01111111);
-        data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
-        data[1]  = (uint8_t)val;
+        data[1]  = (uint8_t)((val >> 8));
+        data[0]  = (uint8_t)val;
+
     }
     return L;
 }
@@ -435,19 +429,4 @@ uint8_t binary_decode_l(uint8_t second_byte){
   uint16_t decoder = 0b10000000;
   uint16_t good_bit = decoder & second_byte;
   return (uint8_t) (good_bit >> 7);
-}
-
-uint16_t binary_decode_length(uint8_t L, uint16_t length_bytes){
-  uint16_t good_bits;
-  if(L == 0){
-      uint8_t decoder = 0b01111111;
-      uint8_t length_byte = (uint8_t)length_bytes;
-      good_bits = decoder & length_bytes;
-  }else if(L == 1){
-      uint16_t decoder = 0b0111111111111111;
-      good_bits = decoder & length_bytes;
-  }else{
-    uint8_t good_bits = 0;
-  }
-  return good_bits;
 }

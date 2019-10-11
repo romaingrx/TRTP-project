@@ -223,10 +223,6 @@ uint8_t binary_decode_window(uint8_t first_byte);
  */
 uint8_t binary_decode_l(uint8_t second_byte);
 
-/*
- * Retourne la valeur de LENGTH contenu dans les 2 bytes de L et LENGTH
- */
-uint16_t binary_decode_length(uint8_t L, uint16_t length_bytes);
 
 
 #endif  /* __PACKET_INTERFACE_H_ */

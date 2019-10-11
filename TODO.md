@@ -146,3 +146,4 @@ listen(int sockfd, int backlog);
 - hton sur les uint16_t et uint32_t
 - `varuint_encode` : Les deux cas si htons(1) == 1 ou pas
 - Lors du décodage, quelle longueur prendre? (Celle dans pkt->LENGTH, un caclul par rapport aux bits reçus, ...)
+- `pkt_decode`, les conditions sur la longueur de la payload et du packet 
