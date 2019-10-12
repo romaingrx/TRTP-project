@@ -59,7 +59,7 @@ void free_pkt(pkt_t* pkt){
 void data_ind(pkt_t *pkt, int connection){
   if(log_out){
   printf("Successfully recieved data %d\n", pkt->SEQNUM);}
-  free_pkt(pkt);
+  free(pkt);
 }
 //
 
@@ -253,15 +253,17 @@ void free_buffer(int connection){
 
 
 void free_queue(){
+  for(int i =0; i<n_connections;i++){
+    free_buffer(i);
+    free(lastack[i]);
+  }
   free(windowsize);
   free(lastack);
   free(next);
   free(window_start);
   free(window_end);
 
-  for(int i =0; i<n_connections;i++){
-    free_buffer(i);
-  }
+
 
   free(head);
 
@@ -291,10 +293,29 @@ void send_ack(pkt_t* packet,int connection){
       return;
     }
   }
-  int n = packet->SEQNUM;
+
+  if(head[connection] != NULL){
+    if(head[connection]->data->SEQNUM == (packet->SEQNUM)){
+      return;
+    }
+  }
+
+  int n = packet->SEQNUM +1;
   if(log_out){
   printf("ACK %d\n", n);}
-  lastack[connection] = packet;
+
+
+
+  free(lastack[connection]);
+
+  //Storing the last acc'd packet in lastack
+  //Not using the packet itelf but a copy, because data_ind frees the packet so
+  //We would have no reference later
+  pkt_t* tempp = malloc(sizeof(pkt_t));
+  memcpy(tempp,packet, sizeof(pkt_t));
+  lastack[connection] = tempp;
+
+
   if(window_start[connection] == n){
     window_inc(connection);
   }
@@ -373,9 +394,7 @@ int data_req(pkt_t *pkt, int connection){
         return 0;
       }
     }
-    printf("ICI\n"); fflush(stdout);
     buffer_add(pkt, connection);
-    printf("ICI\n"); fflush(stdout);
     send_ack(lastack[connection], connection);
   }
 }
