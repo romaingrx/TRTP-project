@@ -20,44 +20,33 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
 
-  init_queue(1);
-  define_connection(0);
+    int err;
+    //struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));
+    struct sockaddr_in6 ipv6;
+    memset(&ipv6, 0, sizeof(ipv6));
 
-  pkt_t* first = pkt_generate(0, 4);
-  pkt_t* second = pkt_generate(1, 4);
-  pkt_t* third = pkt_generate(2, 4);
-  pkt_t* fourth = pkt_generate(3, 4);
+    // err = IPV6_translater(argv[1], &ipv6);
+    int sockfd = socket_init(&ipv6, atoi(argv[2]), NULL, -1);
 
-  data_req(first,0);
 
-  data_req(third,0);
-  data_req(fourth,0);
-  data_req(second,0);
+    ipv6.sin6_family = AF_INET6;
+    ipv6.sin6_port = htons(atoi(argv[2]));
+    char v6dst[INET6_ADDRSTRLEN];
 
-  free_queue();
-  //   int err;
-  //   // struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));
-  //   struct sockaddr_in6 ipv6;
-  //   memset(&ipv6, 0, sizeof(ipv6));
-  //
-  //   // err = IPV6_translater(argv[1], &ipv6);
-  //   int sockfd = socket_init(&ipv6, atoi(argv[2]), NULL, -1);
-  //
-  //   ipv6.sin6_family = AF_INET6;
-  //   ipv6.sin6_port = htons(atoi(argv[2]));
-  //   char v6dst[INET6_ADDRSTRLEN];
-  //   strcpy(v6dst, argv[1]);
-  //   inet_pton(AF_INET6, v6dst, &(ipv6.sin6_addr));
-  //   if (bind(sockfd, (struct sockaddr *) &ipv6, sizeof(ipv6)) == -1){
-  //       printf("%s  \n", strerror(errno));
-  //   }
-  //
-  //   char *buffer = malloc(1024);
-  //   err = recv(sockfd, buffer, 1024, 0);
-  //   printf("> %s\n", buffer);
-  //
-  //   free(buffer);
-  // return 0;
+    strcpy(v6dst, argv[1]);
+
+    inet_pton(AF_INET6, v6dst, &(ipv6.sin6_addr));
+
+    if (bind(sockfd, (struct sockaddr *) &ipv6, sizeof(ipv6)) == -1){
+        printf("%s  \n", strerror(errno));
+    }
+
+    char *buffer = malloc(1024);
+    err = recv(sockfd, buffer, 1024, 0);
+    printf("> %s\n", buffer);
+
+    free(buffer);
+    return 0;
 }
 
 
