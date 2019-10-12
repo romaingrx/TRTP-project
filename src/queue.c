@@ -26,7 +26,8 @@ typedef struct node {
 
 
 int* windowsize = NULL;
-pkt_t** lastack=NULL;
+uint8_t* lastackn=NULL;
+uint32_t* lastackt = NULL;
 int* next=NULL;
 
 int* window_start=NULL;
@@ -81,8 +82,13 @@ int init_queue(int n){
   }
   windowsize = err;
 
-  lastack = (pkt_t**)malloc(sizeof(pkt_t*)*n_connections);
-  if(lastack<0){
+  lastackn = (uint8_t*)malloc(sizeof(uint8_t)*n_connections);
+  if(lastackn<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  lastackt = (uint32_t*)malloc(sizeof(uint32_t)*n_connections);
+  if(lastackt<0){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
@@ -111,7 +117,8 @@ int init_queue(int n){
 
   for(int i=0; i<n; i++){
     windowsize[i]=4; //Should be changed by program
-    lastack[i]=NULL;
+    lastackn[i]=-1;
+    lastackt[i]=0;
     next[i]=0;
     window_start[i]=0;
     window_end[i]=0;
@@ -138,8 +145,13 @@ int add_queue(){
   }
   windowsize = err;
 
-  lastack= (pkt_t**)realloc(lastack, sizeof(pkt_t*)*n_connections);
-  if(err<0){
+  lastackn= (uint8_t*)realloc(lastackn, sizeof(uint8_t)*n_connections);
+  if(lastackn<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
+  lastackt= (uint32_t*)realloc(lastackt, sizeof(uint32_t)*n_connections);
+  if(lastackt<0){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
@@ -188,7 +200,8 @@ int add_queue(){
 int define_connection(int con_indice){
   int window_size = 2; //default
   windowsize[con_indice] = window_size;
-  lastack[con_indice]=NULL;
+  lastackn[con_indice]=-1;
+  lastackt[con_indice]=0;
   next[con_indice]=0;
   window_start[con_indice]=0;
   window_end[con_indice]=window_size-1;
@@ -255,10 +268,10 @@ void free_buffer(int connection){
 void free_queue(){
   for(int i =0; i<n_connections;i++){
     free_buffer(i);
-    free(lastack[i]);
   }
   free(windowsize);
-  free(lastack);
+  free(lastackn);
+  free(lastackt);
   free(next);
   free(window_start);
   free(window_end);
@@ -286,34 +299,24 @@ void window_inc(int connection){
 }
 
 
-void send_ack(pkt_t* packet,int connection){
-  if(packet == NULL){
-    if(log_out){
-      printf("No packet to ack;\n");
-      return;
-    }
-  }
+void send_ack(uint8_t n, uint32_t time,int connection){
 
   if(head[connection] != NULL){
-    if(head[connection]->data->SEQNUM == (packet->SEQNUM)){
+    if(head[connection]->data->SEQNUM == n+1){
       return;
     }
   }
 
-  int n = packet->SEQNUM +1;
+
   if(log_out){
-  printf("ACK %d\n", n);}
+  printf("ACK %d\n", n+1);}
 
+  //HERE GENERATE A PACKET AND SEND IT via sockets
+  //With SEQNUM = n+1
+  //TIMESTAMP = TIME
 
-
-  free(lastack[connection]);
-
-  //Storing the last acc'd packet in lastack
-  //Not using the packet itelf but a copy, because data_ind frees the packet so
-  //We would have no reference later
-  pkt_t* tempp = malloc(sizeof(pkt_t));
-  memcpy(tempp,packet, sizeof(pkt_t));
-  lastack[connection] = tempp;
+  lastackn[connection] = n;
+  lastackt[connection] = time;
 
 
   if(window_start[connection] == n){
@@ -332,7 +335,7 @@ int data_req(pkt_t *pkt, int connection){
     //If packet not valid;
     if(log_out){
     printf("Packet invalid\n");}
-    send_ack(lastack[connection], connection);
+    send_ack(lastackn[connection],lastackt[connection] ,connection);
     return 0;
   }
 
@@ -366,7 +369,7 @@ int data_req(pkt_t *pkt, int connection){
   if(n == next[connection]){
     //If the packet is in sequence
     next_inc(connection);
-    send_ack(pkt, connection);
+    send_ack(pkt->SEQNUM, pkt->TIMESTAMP, connection);
     data_ind(pkt, connection) ;
 
 
@@ -395,7 +398,7 @@ int data_req(pkt_t *pkt, int connection){
       }
     }
     buffer_add(pkt, connection);
-    send_ack(lastack[connection], connection);
+    send_ack(lastackn[connection],lastackt[connection], connection);
   }
 }
 
