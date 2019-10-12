@@ -69,6 +69,18 @@ void data_ind(pkt_t *pkt, int connection){
 
 
 
+//This function initialises a connection and all its variables
+int define_connection(int con_indice){
+  int window_size = 2; //default
+  windowsize[con_indice] = window_size;
+  lastackn[con_indice]=-1;
+  lastackt[con_indice]=0;
+  next[con_indice]=0;
+  window_start[con_indice]=0;
+  window_end[con_indice]=window_size-1;
+  head[con_indice]=NULL;
+  return 0;
+}
 
 
 int init_queue(int n){
@@ -114,7 +126,11 @@ int init_queue(int n){
   }
 
   window_end = err;
-
+  head = (node_t**)malloc(sizeof(node_t*)*n_connections);
+  if(head<0){
+    fprintf(stderr,"init_queue malloc erreur");
+    return(-1);
+  }
   for(int i=0; i<n; i++){
     windowsize[i]=4; //Should be changed by program
     lastackn[i]=-1;
@@ -122,12 +138,10 @@ int init_queue(int n){
     next[i]=0;
     window_start[i]=0;
     window_end[i]=0;
+    define_connection(i);
   }
-  head = (node_t**)malloc(sizeof(node_t*)*n_connections);
-  if(head<0){
-    fprintf(stderr,"init_queue malloc erreur");
-    return(-1);
-  }
+
+
 
   return 0;
 }
@@ -178,36 +192,27 @@ int add_queue(){
 
   window_end = err;
 
-  // for(int i=0; i<n; i++){
-  //   windowsize[i]=4; //Should be changed by program
-  //   lastack[i]=-1;
-  //   next[i]=0;
-  //   window_start[i]=0;
-  //   window_end[i]=0;
-  // }
+
   head = (node_t**)realloc(head, sizeof(node_t*)*n_connections);
   if(head<0){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
+  int i = oldn;
+    windowsize[i]=4; //Should be changed by program
+    lastackn[i]=-1;
+    lastackt[i]=0;
+    next[i]=0;
+    window_start[i]=0;
+    window_end[i]=0;
+    define_connection(i);
+
 
   return 0;
 }
 
 
 
-//This function initialises a connection and all its variables
-int define_connection(int con_indice){
-  int window_size = 2; //default
-  windowsize[con_indice] = window_size;
-  lastackn[con_indice]=-1;
-  lastackt[con_indice]=0;
-  next[con_indice]=0;
-  window_start[con_indice]=0;
-  window_end[con_indice]=window_size-1;
-  head[con_indice]=NULL;
-  return 0;
-}
 
 
 //BUFFER IMPLEMENTATION
