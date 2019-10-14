@@ -58,8 +58,10 @@ void free_pkt(pkt_t* pkt){
 }
 
 void data_ind(pkt_t *pkt, int connection){
+
   if(log_out){
-  printf("Successfully recieved data %d\n", pkt->SEQNUM);}
+  printf("Successfully recieved data %d: %s\n", pkt->SEQNUM, pkt->PAYLOAD);}
+  free(pkt->PAYLOAD);
   free(pkt);
 }
 //
@@ -287,11 +289,8 @@ void free_queue(){
 
 }
 void next_inc(int connection){
-  if(next[connection] < pow(2,n_bits_encode_window)){
-    next[connection]++;
-    return;
-  }
-  next = 0;
+  next[connection]++;
+  return;
 }
 
 void window_inc(int connection){
