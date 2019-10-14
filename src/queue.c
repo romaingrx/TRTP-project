@@ -332,16 +332,23 @@ void send_ack(uint8_t n, uint32_t time,int connection){
 
 
 
-int data_req(pkt_t *pkt, int connection){
+int data_req(char* data, int connection){
+
+  pkt_t* pkt = pkt_new();
+  pkt_status_code status = pkt_decode(data, strlen(data), pkt);
+
+  if(status != PKT_OK){
+    printf("Packet invalid\n");}
+    send_ack(lastackn[connection],lastackt[connection] ,connection);
+    return 0;
+  }
 
   //This function should recieve a bytestream;
   //First we should send decode it.
   if(!decode_pkt(pkt)){
     //If packet not valid;
     if(log_out){
-    printf("Packet invalid\n");}
-    send_ack(lastackn[connection],lastackt[connection] ,connection);
-    return 0;
+
   }
 
   //TODO (rapide):
