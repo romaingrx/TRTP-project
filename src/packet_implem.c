@@ -163,7 +163,7 @@ size_t header_encode(const pkt_t *pkt,char *buf){
     return (size_t)header_length;
 }
 
-pkt_status_code pkt_encode(pkt_t* pkt, char *buf, size_t len)
+pkt_status_code pkt_encode(pkt_t* pkt, char *buf, size_t *len)
 {
    size_t offset = header_encode(pkt, buf);
    if(offset == 0){return 0;}
@@ -172,14 +172,16 @@ pkt_status_code pkt_encode(pkt_t* pkt, char *buf, size_t len)
    CRC1 = crc32(CRC1, (const Bytef *)buf, offset);
    CRC1 = htonl(CRC1);
    memcpy(&buf[offset], &CRC1, 4);
-
    uint16_t length = pkt_get_length(pkt);
-   memcpy(&buf[offset + 4], pkt_get_payload(pkt), length);
-   CRC2 = crc32(0L, Z_NULL, 0);
-   CRC2 = crc32(CRC2, (const Bytef *)(&buf[offset+4]), length);
-   CRC2 = htonl(CRC2);
-   memcpy(&buf[offset + 4 + pkt_get_length(pkt)], &CRC2, 4);
-
+   *len = offset + 4;
+   if(length > 0){
+       memcpy(&buf[offset + 4], pkt_get_payload(pkt), length);
+       CRC2 = crc32(0L, Z_NULL, 0);
+       CRC2 = crc32(CRC2, (const Bytef *)(&buf[offset+4]), length);
+       CRC2 = htonl(CRC2);
+       memcpy(&buf[offset + 4 + length], &CRC2, 4);
+       *len += 4 + length;
+   }
    pkt_del(pkt);
    return PKT_OK;
 }
