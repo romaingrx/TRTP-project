@@ -17,7 +17,7 @@ pkt_t* pkt_sample(uint8_t seqnum, char * data){
     pkt_t * pkt = pkt_new();
     pkt_set_type(pkt, PTYPE_DATA);
     pkt_set_tr(pkt, 0);
-    pkt_set_window(pkt, 4);
+    pkt_set_window(pkt, 30);
     pkt_set_seqnum(pkt, seqnum);
     pkt_set_payload(pkt, data, strlen(data)+1);
     return pkt;
