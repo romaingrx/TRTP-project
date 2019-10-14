@@ -79,7 +79,7 @@ void pkt_del(pkt_t*);
  * @return: Un code indiquant si l'operation a reussi ou representant
  *         l'erreur rencontree.
  */
-pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt);
+pkt_status_code pkt_decode(char *data, const size_t len, pkt_t *pkt);
 
 /*
  * Encode une struct pkt dans un buffer, prÃƒÂªt a ÃƒÂªtre envoye sur le reseau
@@ -93,7 +93,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt);
  * @return: Un code indiquant si l'operation a reussi ou E_NOMEM si
  *         le buffer est trop petit.
  */
-pkt_status_code pkt_encode(const pkt_t*, char *buf, size_t len);
+pkt_status_code pkt_encode(pkt_t*, char *buf, size_t len);
 
 /*
  * Encode le header de la structure dans data

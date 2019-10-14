@@ -87,7 +87,7 @@ pkt_status_code header_decode(pkt_t *pkt,const char *buf, size_t *offset){
     return PKT_OK;
 }
 
-pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
+pkt_status_code pkt_decode(char *data, const size_t len, pkt_t *pkt)
 {
     pkt_status_code status;
     size_t offset;
@@ -162,7 +162,7 @@ size_t header_encode(const pkt_t *pkt,char *buf){
     return (size_t)header_length;
 }
 
-pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t len)
+pkt_status_code pkt_encode(pkt_t* pkt, char *buf, size_t len)
 {
    size_t offset = header_encode(pkt, buf);
    if(offset == 0){return 0;}
@@ -178,7 +178,7 @@ pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t len)
    CRC2 = crc32(CRC2, (const Bytef *)(&buf[offset+4]), length);
    CRC2 = htonl(CRC2);
    memcpy(&buf[offset + 4 + pkt_get_length(pkt)], &CRC2, 4);
-   
+
    pkt_del(pkt);
    return PKT_OK;
 }
