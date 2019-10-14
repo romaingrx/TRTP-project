@@ -20,62 +20,36 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
   init_queue(1);
-  for(int i = 10; i>=0; i--){
+
+
   pkt_t *pkt = pkt_new();
   pkt->TYPE = 0b01;
   pkt->TR = 0;
   pkt->WINDOW = 17;
   pkt->L = 0;
   pkt->LENGTH = 30;
-  pkt->SEQNUM = i;
+  pkt->SEQNUM = 0;
   pkt->TIMESTAMP = 66;
-  // pkt->CRC1 = 37;
-  // pkt->CRC2 = 666;
+  pkt->CRC1 = 37;
+  pkt->CRC2 = 666;
   char* data = "GROSSE GROSSE BITE DE NOIR";
   pkt_set_payload(pkt, data, strlen(data)+1);
-
 
 
   char* donnees = malloc(sizeof(char)*1024);
   size_t coucou = 1024;
   pkt_encode(pkt, donnees,coucou);
 
-  pkt_t* test2 = pkt_new();
-  pkt_status_code encoderr = pkt_decode(donnees, coucou,test2 );
+  pkt_del(pkt);
+
+
   treat_bytestream(donnees, coucou, 0);
+    free(donnees);
   // data_req(pkt,0);
-}
-add_queue();
-printf("-------------------------\n");
-for(int i = 0; i<10; i++){
-pkt_t *pkt = pkt_new();
-pkt->TYPE = 0b01;
-pkt->TR = 0;
-pkt->WINDOW = 17;
-pkt->L = 0;
-pkt->LENGTH = 30;
-pkt->SEQNUM = i;
-pkt->TIMESTAMP = 66;
-// pkt->CRC1 = 37;
-// pkt->CRC2 = 666;
-char* data = "GROSSE GROSSE BITE DE NOIR";
-pkt_set_payload(pkt, data, strlen(data)+1);
 
-
-
-char* donnees = malloc(sizeof(char)*1024);
-size_t coucou = 1024;
-pkt_encode(pkt, donnees,coucou);
-
-pkt_t* test2 = pkt_new();
-pkt_status_code encoderr = pkt_decode(donnees, coucou,test2 );
-treat_bytestream(donnees, coucou, 1);
-// data_req(pkt,0);
-}
+  free_queue();
 return 0;
 }
-
-
 
     // int err;
     // //struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));

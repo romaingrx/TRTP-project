@@ -50,19 +50,14 @@ int decode_pkt(pkt_t *pkt){
   return 1;
 }
 
-void free_pkt(pkt_t* pkt){
-  // if(pkt->PAYLOAD != NULL){
-  //   free(PAYLOAD);
-  // }
-  free(pkt);
-}
 
 void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
   printf("Successfully recieved data %d: %s\n", pkt->SEQNUM, pkt->PAYLOAD);}
-  free(pkt->PAYLOAD);
-  free(pkt);
+  pkt_del(pkt);
+  // free(pkt->PAYLOAD);
+  // free(pkt);
 }
 //
 
@@ -262,7 +257,7 @@ void buffer_remove(int connection){
 
 void free_buffer(int connection){
   while(head[connection] != NULL){
-    free_pkt(head[connection]->data);
+    pkt_del(head[connection]->data);
     node_t* oldhead = head[connection];
     head[connection]=oldhead->next;
     free(oldhead);
@@ -349,7 +344,7 @@ int data_req(pkt_t* pkt, int connection){
       //Packet not inside window, ignore it
       if(log_out){
       printf("Out of window packet 1: %d\n", n);}
-      free_pkt(pkt);
+      pkt_del(pkt);
       return 0;
     }
   }
@@ -359,7 +354,7 @@ int data_req(pkt_t* pkt, int connection){
       if(log_out){}
 
       printf("Out of window packet 2\n");
-      free_pkt(pkt);
+      pkt_del(pkt);
       return 0;
     }
   }
@@ -390,7 +385,7 @@ int data_req(pkt_t* pkt, int connection){
     if(head[connection] != NULL){
       if(buffer_peak(connection)->SEQNUM == n){
         if(log_out){printf("Already in buffer\n");}
-        free_pkt(pkt);
+        pkt_del(pkt);
         return 0;
       }
     }
