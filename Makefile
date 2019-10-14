@@ -21,6 +21,7 @@ ERR_FILE = src/stderr.txt
 VAR = "192.168.1.5 7903"
 
 COMP = @gcc
+FLAGS = -lz -lm
 
 default : $(EXEC_PRACTICE)
 	@./$(EXEC_PRACTICE) $(VAR) 2> $(ERR_FILE)
@@ -42,7 +43,7 @@ $(EXEC_RECEIVE) : $(O_RECEIVE) $(O_QUEUE)
 	$(COMP) -o $(EXEC_RECEIVE) $(O_RECEIVE) $(O_QUEUE)
 
 $(EXEC_PRACTICE) : $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE)
-	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE) -lm
+	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE) $(FLAGS)
 
 $(O_MAIN) : $(C_MAIN) $(H_RECEIVE)
 	$(COMP) -c $(C_MAIN) -o $(O_MAIN)

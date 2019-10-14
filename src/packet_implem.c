@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <zlib.h>
+#include <zlib.h>
 #include <arpa/inet.h>
 #include <time.h>
 #include <math.h>
@@ -13,22 +13,6 @@
 
 /* Package structure */
 
-
-/* Package structure */
-// struct __attribute__((__packed__)) pkt {
-//     unsigned WINDOW : 5;
-//     unsigned int TR : 1;
-//     unsigned int TYPE : 2;
-//     uint16_t LENGTH : 15;
-//     unsigned int L : 1;
-//     uint8_t SEQNUM;
-//     uint32_t TIMESTAMP;
-//     uint32_t CRC1;
-//     char * PAYLOAD;
-//     uint32_t CRC2;
-// };
-
-
 pkt_t* pkt_new()
 {
     pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
@@ -36,12 +20,12 @@ pkt_t* pkt_new()
       fprintf(stderr, "Erreur lors du malloc du package");
       return NULL;
     }
-    // pkt->TYPE = 1;
-    // pkt->TR = 0;
-    // pkt->WINDOW = 0;
-    // pkt->LENGTH = 0; // 0 == htons(0)
-    // pkt->TIMESTAMP = 0;
-    // pkt->CRC1 = 0;
+    pkt->TYPE = 0;
+    pkt->TR = 0;
+    pkt->WINDOW = 0;
+    pkt->LENGTH = 0; // 0 == htons(0)
+    pkt->TIMESTAMP = 0;
+    pkt->CRC1 = 0;
     pkt->PAYLOAD = NULL;
     return pkt;
 }
@@ -68,11 +52,12 @@ pkt_status_code header_decode(pkt_t *pkt,const char *buf, size_t *offset){
     if(status != PKT_OK){return status;}
 
     uint8_t *data = malloc(2);
+    if(!data){return E_NOMEM;}
     uint16_t retval;
     memcpy(data, (void*)&buf[1],2);
     size_t L = varuint_decode(data, 2, &retval);
     free(data);
-    if(L != 0 && L != 1){return E_OTHER;}
+    if(L != 0 && L != 1){return 0;}
     status = pkt_set_l(pkt, L);
     if(status != PKT_OK){return status;}
     status = pkt_set_length(pkt, retval);
@@ -86,7 +71,7 @@ pkt_status_code header_decode(pkt_t *pkt,const char *buf, size_t *offset){
     *offset += 1;
     uint32_t TIMESTAMP;
     memcpy(&TIMESTAMP, (void*)&buf[*offset], 4);
-    status = pkt_set_timestamp(pkt, ntohl(TIMESTAMP));
+    status = pkt_set_timestamp(pkt, TIMESTAMP);
     if(status != PKT_OK){return status;}
     *offset += 4;
 
@@ -97,7 +82,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 {
     pkt_status_code status;
     size_t offset;
-    uint32_t CRC1, CRC2;
+    uint32_t CRC1, CRC2, CRC1_TESTER, CRC2_TESTER;
 
     /* Vérifie la validité du packet */
     if(!len){return E_UNCONSISTENT;} // 0 bit reçu
@@ -106,22 +91,33 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
     status = header_decode(pkt, data, &offset);
     if(status != PKT_OK){return status;}
 
+
     memcpy(&CRC1, (void*)&data[offset], 4);
-    status = pkt_set_crc1(pkt, ntohl(CRC1));
+    CRC1 = ntohl(CRC1);
+
+    CRC1_TESTER = crc32(0L, Z_NULL, 0);
+    CRC1_TESTER = crc32(CRC1_TESTER, (const Bytef *)(&data[0]), offset);
+    if(CRC1 != CRC1_TESTER){return E_CRC;}
+
+    status = pkt_set_crc1(pkt, CRC1);
     if(status != PKT_OK){return status;}
-    offset += 4;
 
     uint16_t length = pkt_get_length(pkt);
-    uint8_t l = pkt_get_l(pkt);
-    
+
     char *PAYLOAD = malloc(length);
-    memcpy(PAYLOAD, (void*)&data[offset], length);
+    if(!PAYLOAD){return E_NOMEM;}
+    memcpy(PAYLOAD, (void*)&data[offset + 4], length);
     status = pkt_set_payload(pkt, PAYLOAD, length);
     if(status != PKT_OK){return status;}
-    offset += length;
 
-    memcpy(&CRC2, (void*)&data[offset], 4);
-    status = pkt_set_crc2(pkt, ntohl(CRC2));
+    memcpy(&CRC2, (void*)&data[offset + length], 4);
+    CRC2 = ntohl(CRC2);
+
+    CRC2_TESTER = crc32(0L, Z_NULL, 0);
+    CRC2_TESTER = crc32(CRC2_TESTER, (const Bytef *)(&data[offset + 4]), length);
+    if(CRC2 != CRC2_TESTER){return E_CRC;}
+
+    status = pkt_set_crc2(pkt, CRC2);
     if(status != PKT_OK){return status;}
     offset += 4;
 
@@ -131,13 +127,13 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 }
 
 size_t header_encode(const pkt_t *pkt,char *buf){
-    pkt_status_code status;
-    uint8_t err, header_length = predict_header_length(pkt);
+    uint8_t header_length = predict_header_length(pkt);
     memcpy(buf, (void*)pkt, 1); // copy TYPE, TR, WINDOW
     size_t offset;
     if (header_length == 8) {
         offset = 3;
         uint8_t *length_bytes = malloc(2);
+        if(!length_bytes){return E_NOMEM;}
         if(varuint_encode(pkt_get_length(pkt), length_bytes, 2) == -1){return 0;}
         memcpy(&buf[1], (void*)&length_bytes[0], 2);
 
@@ -151,21 +147,29 @@ size_t header_encode(const pkt_t *pkt,char *buf){
         memcpy(&buf[1], &second_byte, 1);
     }
     memcpy(&buf[offset], (void*)&(pkt->SEQNUM), 1);
-    uint32_t TIMESTAMP = htonl(pkt_get_timestamp(pkt));
+    uint32_t TIMESTAMP = pkt_get_timestamp(pkt);
     memcpy(&buf[offset+1], (void*)&TIMESTAMP, 4);
     return (size_t)header_length;
 }
 
 pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
 {
-   pkt_status_code status;
-   time_t seconds;
+   //pkt_status_code status;
+   //time_t seconds;
+   *len += 1;
    size_t offset = header_encode(pkt, buf);
-   if(offset == 0){return E_OTHER;}
-   uint32_t CRC1 = htonl(pkt_get_crc1(pkt));
+   if(offset == 0){return 0;}
+   uint32_t CRC1, CRC2;
+   CRC1 = crc32(0L, Z_NULL, 0);
+   CRC1 = crc32(CRC1, (const Bytef *)buf, offset);
+   CRC1 = htonl(CRC1);
    memcpy(&buf[offset], &CRC1, 4);
-   memcpy(&buf[offset + 4], pkt_get_payload(pkt), pkt_get_length(pkt));
-   uint32_t CRC2 = htonl(pkt_get_crc2(pkt));
+
+   uint16_t length = pkt_get_length(pkt);
+   memcpy(&buf[offset + 4], pkt_get_payload(pkt), length);
+   CRC2 = crc32(0L, Z_NULL, 0);
+   CRC2 = crc32(CRC2, (const Bytef *)(&buf[offset+4]), length);
+   CRC2 = htonl(CRC2);
    memcpy(&buf[offset + 4 + pkt_get_length(pkt)], &CRC2, 4);
 
    return PKT_OK;
@@ -302,6 +306,7 @@ pkt_status_code pkt_set_payload(pkt_t *pkt,
     if(pkt_get_payload(pkt) != NULL){free(pkt->PAYLOAD);}
     if(status != PKT_OK){return status;}
     pkt->PAYLOAD = (char*) malloc(length);
+    if(!(pkt->PAYLOAD)){return 0;}
     memcpy(pkt->PAYLOAD, data, length);
     return PKT_OK;
 }
@@ -333,7 +338,7 @@ ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
         fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
         return -1;} // Valeur trop grande pour etre encodee sur 15 bits
     uint8_t L = varuint_predict_len(val);
-    if(len < (L+1)){
+    if((uint16_t)len < (L+1)){
         fprintf(stderr, "[varuint_encode] Dimension %zu de data trop petite pour stocker %u bytes \n", len, L);
         return -1;} // Dimension de data trop petite pour stocker val
     if(L == 0){
@@ -350,39 +355,7 @@ ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
 
 
 
-ssize_t varuint_encode_experimental(uint16_t val, uint8_t *data, const size_t len)
-{
-    if(len != 1 && len != 2){
-        fprintf(stderr, "[varuint_encode] Dimension %zu différente de {1, 2} byte(s)\n", len);
-        return -1;} // len != {1, 2} byte(s)
-    if(val > MAX_15BITS){
-        fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
-        return -1;} // Valeur trop grande pour etre encodee sur 15 bits
-    uint8_t L = len;
-    if(len < (L+1)){
-        fprintf(stderr, "[varuint_encode] Dimension %zu de data trop petite pour stocker %u bytes \n", len, L);
-        return -1;} // Dimension de data trop petite pour stocker val
-    if(L == 0){
-        data[0] = (uint8_t)val;
-    }else if(L == 1){
-        if(ntohs(1) == 1){
-            data[0]  = (uint8_t)((val >> 8) & 0b01111111);
-            data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
-            data[1]  = (uint8_t)val;
-        }else{
-            val = htons(val);
-            uint8_t first = (uint16_t)(val >> 8);
-            uint8_t second = (uint8_t)(val);
-            val = second + (first << 7);
-            data[0]  = (uint8_t)((val>1) & 0b01111111);
-            data[0] += (uint8_t)pow(2,7); // Ajoute la valeur de L
-            data[1]  = (uint8_t)(val & 1) << 7;
-            data[1] += (uint8_t)(val >> 8);
 
-        }
-    }
-    return L;
-}
 
 size_t varuint_len(const uint8_t *data)
 {
