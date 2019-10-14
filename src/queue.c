@@ -397,6 +397,7 @@ int data_req(pkt_t* pkt, int connection){
     }
     buffer_add(pkt, connection);
     send_ack(lastackn[connection],lastackt[connection], connection);
+    return 0;
   }
 }
 
