@@ -152,11 +152,8 @@ size_t header_encode(const pkt_t *pkt,char *buf){
     return (size_t)header_length;
 }
 
-pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t *len)
+pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t len)
 {
-   //pkt_status_code status;
-   //time_t seconds;
-   *len += 1;
    size_t offset = header_encode(pkt, buf);
    if(offset == 0){return 0;}
    uint32_t CRC1, CRC2;
