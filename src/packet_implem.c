@@ -132,6 +132,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 
 
      free(PAYLOAD);
+     free(data);
      return PKT_OK;
 }
 
@@ -177,7 +178,8 @@ pkt_status_code pkt_encode(const pkt_t* pkt, char *buf, size_t len)
    CRC2 = crc32(CRC2, (const Bytef *)(&buf[offset+4]), length);
    CRC2 = htonl(CRC2);
    memcpy(&buf[offset + 4 + pkt_get_length(pkt)], &CRC2, 4);
-
+   
+   pkt_del(pkt);
    return PKT_OK;
 }
 

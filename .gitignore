@@ -5,6 +5,7 @@ test
 main
 practice
 src/practice.c
+src/sender
 inginious\ tasks
 *.o
 *.out
