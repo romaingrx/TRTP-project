@@ -10,6 +10,10 @@
 void data_ind(pkt_t *pkt, int connection);
 
 
+pkt_status_code treat_bytestream(char* data, size_t len, int connection);
+
+
+
 //Envoie un ack avec pour numéro de séquence n à la connection
 //correspondante
 

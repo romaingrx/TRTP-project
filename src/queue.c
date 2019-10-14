@@ -330,18 +330,7 @@ void send_ack(uint8_t n, uint32_t time,int connection){
 }
 
 
-pkt_status_code treat_bytestream(char* data, size_t len, int connection){
-  pkt_t packet = pkt_new();
-  pkt_status_code status = pkt_decode(data, len, packet);
-  if(status != PKT_OK){
-        send_ack(lastackn[connection],lastackt[connection] ,connection);
-        if(log_out){
-        printf("Packet invalid\n");}
-        return status;
-  }
 
-  return data_req(packet, connection);
-}
 
 
 
@@ -413,6 +402,19 @@ int data_req(pkt_t* pkt, int connection){
 
 
 
+
+pkt_status_code treat_bytestream(char* data, size_t len, int connection){
+  pkt_t* packet = pkt_new();
+  pkt_status_code status = pkt_decode(data, len, packet);
+  if(status != PKT_OK){
+        send_ack(lastackn[connection],lastackt[connection] ,connection);
+        if(log_out){
+        printf("Packet invalid\n");}
+        return status;
+  }
+
+  return data_req(packet, connection);
+}
 
 
 
