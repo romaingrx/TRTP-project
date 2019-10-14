@@ -51,6 +51,9 @@ typedef enum {
     E_UNCONSISTENT, /* Le paquet est incoherent */
 } pkt_status_code;
 
+pkt_t* pkt_sample(uint8_t seqnum, char * data);
+
+
 /* Alloue et initialise une struct pkt
  * @return: NULL en cas d'erreur */
 pkt_t* pkt_new();
