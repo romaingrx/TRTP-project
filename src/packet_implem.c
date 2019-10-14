@@ -13,6 +13,15 @@
 
 /* Package structure */
 
+pkt_t* pkt_sample(uint8_t seqnum){
+    pkt_t * pkt = pkt_new();
+    pkt_set_type(pkt, PTYPE_DATA);
+    pkt_set_tr(pkt, 0);
+    pkt_set_window(pkt, 4);
+    pkt_set_seqnum(pkt, seqnum);
+    return pkt;
+}
+
 pkt_t* pkt_new()
 {
     pkt_t *pkt = (pkt_t*) malloc(sizeof(pkt_t));
@@ -110,7 +119,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
     status = pkt_set_payload(pkt, PAYLOAD, length);
     if(status != PKT_OK){return status;}
 
-    memcpy(&CRC2, (void*)&data[offset + length], 4);
+    memcpy(&CRC2, (void*)&data[offset + length + 4], 4);
     CRC2 = ntohl(CRC2);
 
     CRC2_TESTER = crc32(0L, Z_NULL, 0);
