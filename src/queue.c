@@ -300,6 +300,7 @@ void window_inc(int connection){
 
 void send_ack(uint8_t n, uint32_t time,int connection){
 
+  //Pour pas envoyer le mauvais ack
   if(head[connection] != NULL){
     if(head[connection]->data->SEQNUM == n+1){
       return;
