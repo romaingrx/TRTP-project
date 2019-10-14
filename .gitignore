@@ -4,6 +4,7 @@ ex
 test
 main
 practice
+practice.c
 *.o
 *.out
 test
