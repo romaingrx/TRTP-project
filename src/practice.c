@@ -19,8 +19,27 @@ void test_encode();
 void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
+  pkt_t *pkt = pkt_new();
+  pkt->TYPE = 0b01;
+  pkt->TR = 0;
+  pkt->WINDOW = 12;
+  pkt->L = 0;
+  pkt->LENGTH = 30;
+  pkt->SEQNUM = 0;
+  pkt->TIMESTAMP = 66;
+  pkt->CRC1 = 37;
+  pkt->CRC2 = 666;
+  char* data = "GROSSE GROSSE BITE DE NOIR";
+  pkt_set_payload(pkt, data, strlen(data)+1);
 
-    // pkt_t pack0 = pkt_new();
+  init_queue(1);
+
+  char* donnees = malloc(sizeof(char)*1024);
+  size_t coucou = 1024;
+  pkt_encode(pkt, donnees,coucou);
+  treat_bytestream(donnees, coucou, 0);
+  // data_req(pkt,0);
+
 
     // int err;
     // //struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));
@@ -114,7 +133,7 @@ void test_encode(){
 
     size_t len = 128;
     char *buf = malloc(len);
-    pkt_status_code status = pkt_encode(pkt, buf, &len);
+    pkt_status_code status = pkt_encode(pkt, buf, len);
     printf("TYPE : \t%u \n",((uint8_t)buf[0] >> 6));
     printf("TR : \t%u \n",((uint8_t)buf[0] >> 5) & 0b00000001);
     printf("WINDOW : \t%u \n",((uint8_t)buf[0]) & 0b00011111);

@@ -410,7 +410,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   if(status != PKT_OK){
         send_ack(lastackn[connection],lastackt[connection] ,connection);
         if(log_out){
-        printf("Packet invalid\n");}
+        printf("Packet invalid: %d\n",status);}
         return status;
   }
 
