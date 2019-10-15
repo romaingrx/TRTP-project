@@ -302,14 +302,18 @@ void send_ack(uint8_t n, uint32_t time,int connection){
 
   //Pour pas envoyer le mauvais ack
   if(head[connection] != NULL){
-    if(head[connection]->data->SEQNUM == n+1){
+    if(head[connection]->data->SEQNUM ==  n+1){
       return;
     }
   }
-
+  uint8_t toack = 0;
+  if(n != 255){
+    toack = n+1;
+  }
 
   if(log_out){
-  printf("ACK %d\n", n+1);}
+  printf("ACK %d\n", toack);
+}
 
   //HERE GENERATE A PACKET AND SEND IT via sockets
   //With SEQNUM = n+1
