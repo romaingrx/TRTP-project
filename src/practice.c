@@ -38,14 +38,10 @@ int main(int argc, char const *argv[]) {
 
   char* donnees = malloc(sizeof(char)*1024);
   size_t coucou = 1024;
-  pkt_encode(pkt, donnees,coucou);
-
-  pkt_del(pkt);
+  pkt_encode(pkt, donnees,&coucou);
 
 
   treat_bytestream(donnees, coucou, 0);
-    free(donnees);
-  // data_req(pkt,0);
 
   free_queue();
 return 0;
@@ -141,7 +137,7 @@ void test_encode(){
 
     size_t len = 128;
     char *buf = malloc(len);
-    pkt_status_code status = pkt_encode(pkt, buf, len);
+    pkt_status_code status = pkt_encode(pkt, buf, &len);
     printf("TYPE : \t%u \n",((uint8_t)buf[0] >> 6));
     printf("TR : \t%u \n",((uint8_t)buf[0] >> 5) & 0b00000001);
     printf("WINDOW : \t%u \n",((uint8_t)buf[0]) & 0b00011111);
