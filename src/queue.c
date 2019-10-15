@@ -13,7 +13,7 @@ int log_out = 1;
 
 // END OF TEMPORARY ZONE
 
-int n_bits_encode_window = 5;
+int n_bits_encode_window = 8;
 int n_connections = -1;
 
 int get_nconnections(){
@@ -284,15 +284,22 @@ void free_queue(){
 
 }
 void next_inc(int connection){
+  if(next[connection] < pow(2,n_bits_encode_window)-1){
   next[connection]++;
+  return;
+  }
+  next[connection] = 0;
+  // next[connection]++;
   return;
 }
 
 void window_inc(int connection){
-  if(window_start[connection] < pow(2,n_bits_encode_window)){  window_start[connection] ++;}
+  if(window_start[connection] < pow(2,n_bits_encode_window)-1){window_start[connection] ++;}
   else {window_start[connection] = 0;}
-  if(window_end[connection] < pow(2,n_bits_encode_window)){  window_end[connection] ++;}
-  else {window_end[connection] = 0;}
+
+
+  if(window_end[connection] < pow(2,n_bits_encode_window)-1){ window_end[connection] ++;}
+  else {    window_end[connection] = 0;}
   if(log_out){
   printf("[%d,%d]\n", window_start[connection], window_end[connection]);}
 }
@@ -358,7 +365,7 @@ int data_req(pkt_t* pkt, int connection){
       //Packet not inside window, ignore it
       if(log_out){}
 
-      printf("Out of window packet 2\n");
+      printf("Out of window packet 2 %d \n", pkt->SEQNUM);
       pkt_del(pkt);
       return 0;
     }
