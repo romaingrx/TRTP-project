@@ -19,35 +19,39 @@ void test_encode();
 void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
-  init_queue(1);
-  int a = 0;
-
-  pkt_t *pkt = pkt_new();
-  pkt->TYPE = 0b01;
-  pkt->TR = 0;
-  pkt->WINDOW = 17;
-  pkt->L = 0;
-  pkt->LENGTH = 30;
-  pkt->SEQNUM = 0;
-  pkt->TIMESTAMP = 66;
-  pkt->CRC1 = 37;
-  pkt->CRC2 = 666;
-  char* data = "GROSSE GROSSE BITE DE NOIR";
-  pkt_set_payload(pkt, data, strlen(data)+1);
 
 
-  char* donnees = malloc(sizeof(char)*1024);
-  size_t coucou = 1024;
-  pkt_encode(pkt, donnees,&coucou);
-
-  pkt_del(pkt);
-
-
-  treat_bytestream(donnees, coucou, 0);
-    free(donnees);
-  // data_req(pkt,0);
-
-  free_queue();
+  socket_listening(NULL, 8555, 1);
+  free_receive();
+  // init_queue(1);
+  // int a = 0;
+  //
+  // pkt_t *pkt = pkt_new();
+  // pkt->TYPE = 0b01;
+  // pkt->TR = 0;
+  // pkt->WINDOW = 17;
+  // pkt->L = 0;
+  // pkt->LENGTH = 30;
+  // pkt->SEQNUM = 0;
+  // pkt->TIMESTAMP = 66;
+  // pkt->CRC1 = 37;
+  // pkt->CRC2 = 666;
+  // char* data = "GROSSE GROSSE BITE DE NOIR";
+  // pkt_set_payload(pkt, data, strlen(data)+1);
+  //
+  //
+  // char* donnees = malloc(sizeof(char)*1024);
+  // size_t coucou = 1024;
+  // pkt_encode(pkt, donnees,&coucou);
+  //
+  // pkt_del(pkt);
+  //
+  //
+  // treat_bytestream(donnees, coucou, 0);
+  //   free(donnees);
+  // // data_req(pkt,0);
+  //
+  // free_queue();
 return 0;
 }
 

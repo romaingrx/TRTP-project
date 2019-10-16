@@ -1,6 +1,10 @@
 #include <netinet/in.h>
 
 
+
+int socket_listening(char* hostname, int port, int n_connections);
+
+void free_receive();
 /*
  * Transforme l'adresse en IPv6
  * @return : -1 si une erreur survient
