@@ -19,7 +19,7 @@
 int print = 0;
 
 //All needed variables for socket_listening.
-int master_socket, addrlen, *client_socket, max_clients = 10, activity, i, valread, sd, max_sd;
+int addrlen, *client_socket, max_clients = 10, activity, i, valread, sd, max_sd;
 struct sockaddr_in6 address, newaddress;
 char buffer[513];
 fd_set readfds;
@@ -29,7 +29,25 @@ void free_receive(){
   free(client_socket);
 }
 
+int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
+    *master_socket = socket(AF_INET6, SOCK_DGRAM, 0);
+    address.sin6_family = AF_INET6;
+    if(hostname == NULL) address.sin6_addr=in6addr_any;
+    else inet_pton(AF_INET6, hostname, (void *)&address.sin6_addr.s6_addr);
+    address.sin6_port =htons(port);
+    address.sin6_scope_id = 0;
+    if (bind(*master_socket, (struct sockaddr*) &address, sizeof(address)) < 0)
+    {
+            fprintf(stderr, "Error binding master socket: %s", strerror(errno));
+            return -1;
+    }
+    *addrlen = sizeof(address);
+    return 0;
+}
+
 int socket_listening(char* hostname, int port, int n_connections){
+  int master_socket;
+
   printf("Socket listening\n");
   client_socket = malloc(sizeof(int)*n_connections);
 
@@ -37,22 +55,12 @@ int socket_listening(char* hostname, int port, int n_connections){
   for (i = 0; i < max_clients; i++)   { client_socket[i] = -1;  }
 
   //CREATING AND INITIALISING A MASTER SOCKET
-  if( (master_socket = socket(AF_INET6 , SOCK_DGRAM , 0)) == 0)
+  if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
   {
       perror("socket failed");
       return -1;
   }
-  address.sin6_family = AF_INET6;
-  if(hostname == NULL) address.sin6_addr=in6addr_any;
-  else inet_pton(AF_INET6, hostname, (void *)&address.sin6_addr.s6_addr);
-  address.sin6_port =htons(port);
-  address.sin6_scope_id = 0;
-  if (bind(master_socket, (struct sockaddr*) &address, sizeof(address)) < 0)
-  {
-          fprintf(stderr, "Error binding master socket: %s", strerror(errno));
-          return -1;
-  }
-  addrlen = sizeof(address);
+
   //END OF INITIALISING MASTER socket
   //WHILE LOOP
   while(1)
@@ -92,7 +100,7 @@ int socket_listening(char* hostname, int port, int n_connections){
        //then its an incoming connection
        if (FD_ISSET(master_socket, &readfds))
        {
-           int bytesread = recvfrom(master_socket, buffer, 513,MSG_WAITALL, (struct sockaddr*) &newaddress, &addrlen);
+           int bytesread = recvfrom(master_socket, buffer, 513,MSG_WAITALL, (struct sockaddr*) &newaddress, (socklen_t*)&addrlen);
            if(bytesread <0){
              printf("Error reading: %s\n", strerror(errno));
            }
