@@ -19,9 +19,8 @@
 int print = 0;
 
 //All needed variables for socket_listening.
-int addrlen, *client_socket, max_clients = 10, activity, i, valread, sd, max_sd;
+int *client_socket, max_clients;
 struct sockaddr_in6 address, newaddress;
-char buffer[513];
 fd_set readfds;
 
 
@@ -47,17 +46,18 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
 
 int socket_listening(char* hostname, int port, int n_connections){
   int master_socket;
-
+  int addrlen, max_sd=0; //mas_sd désigne le "dernier" socket assigné
+  char buffer[512];
   printf("Socket listening\n");
   client_socket = malloc(sizeof(int)*n_connections);
-
+  max_clients = n_connections;
   //Initialising all client sockets to 0
-  for (i = 0; i < max_clients; i++)   { client_socket[i] = -1;  }
+  for (int i = 0; i < max_clients; i++)   { client_socket[i] = -1;  }
 
   //CREATING AND INITIALISING A MASTER SOCKET
   if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
   {
-      perror("socket failed");
+      printf("Create master socket failed");
       return -1;
   }
 
@@ -72,12 +72,13 @@ int socket_listening(char* hostname, int port, int n_connections){
        max_sd = master_socket;
 
        //add child sockets to set
-       for ( i = 0 ; i < max_clients ; i++)
+       for (int  i = 0 ; i < max_clients ; i++)
        {
            //socket descriptor
-           sd = client_socket[i];
+           int sd = client_socket[i];
            //if valid socket descriptor then add to read list
-           if(sd > 0)
+
+           if(sd > 0) //Si ils sont à -1 on les ajoute pas donc parfait
                FD_SET( sd , &readfds);
 
            //highest file descriptor number, need it for the select function
@@ -88,7 +89,7 @@ int socket_listening(char* hostname, int port, int n_connections){
        //wait for an activity on one of the sockets , timeout is NULL ,
        //so wait indefinitely
 
-       activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
+       int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
 
        if ((activity < 0) && (errno!=EINTR))
        {
@@ -107,73 +108,72 @@ int socket_listening(char* hostname, int port, int n_connections){
 
            printf("Received: %s", buffer);
 
-
-
-           // //ICI JE RENVOIE JUSTE UN MESSAGE A LA SOURCE
-           char* message = "Bill Gates te remercie\n";
-           // if(sendto(master_socket, message, strlen(message), 0,(struct sockaddr*)&newaddress, addrlen) <1)
-           // {
-           //     printf("Send error: %s\n",strerror(errno));
-           // }
-
            //ICI JE CONNECTE NEWSOCKET A LA SOURCE
            int errconnect  = connect(master_socket,(struct sockaddr *) &newaddress, addrlen);
            // printf("Errconnect returns: %d and err: %s\n", errconnect,strerror(errno));
-
-           //EN THEORIE ICI JENVOIE A LA SOURCE, IL RETOURNE QU'il Y ARRIVE MAIS IL S'AVERE QUE LA SRC NE RECOIT RIEN
+           char* message = "Bill Gates te remercie\n";
            if(send(master_socket, message, strlen(message), 0) <1)
            {
                printf("Send error: %s\n",strerror(errno));
            }
-           else printf("RESPONSE SENT\n");
 
            //add new socket to array of sockets
-           for (i = 0; i < max_clients; i++)
+           for (int i = 0; i < max_clients; i++)
            {
-               //if position is empty
-               if( client_socket[i] == -1 )
+               //if position is empty thus filled with -1
+               if( client_socket[i] == -1)
                {
                    client_socket[i] = master_socket;
                    printf("Adding to list of sockets as %d\n" , i);
-
+                   fflush(stdout);
                    i = max_clients +1;
                }
            }
-       }
+           if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
+           {
+               printf("Create new secondary master socket failed");
+               return -1;
+           }
 
+       }
+       else{
        //else its some IO operation on some other socket
-       for (i = 0; i < max_clients; i++)
+       for (int i = 0; i < max_clients; i++)
        {
-           sd = client_socket[i];
+           int sd = client_socket[i];
 
            if (FD_ISSET(sd, &readfds))
            {
                //Check if it was for closing , and also read the
-               //incoming message
-               if ((valread = read( sd , buffer, 1024)) == 0)
-               {
-                  //  //Somebody disconnected , get his details and print
-                  //  getpeername(sd , (struct sockaddr*)&address , \
-                  //      (socklen_t*)&addrlen);
-                  //  printf("Host disconnected , ip %s , port %d \n" ,
-                  // inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
-                  //
-                  //  //Close the socket and mark as 0 in list for reuse
-                  //  close( sd );
-                  //  client_socket[i] = 0;
-               }
-
-               //Echo back the message that came in
-               else
-               {
-                   //set the string terminating NULL byte on the end
-                   //of the data read
-                   buffer[valread] = '\0';
-                   send(sd , buffer , strlen(buffer) , 0 );
-               }
+               //incoming message$
+               int valread;
+               char buffer[513];
+               valread = recv(sd, &buffer, 513,0);
+               // if ((valread = read( sd , buffer, 1024)) == 0)
+               // {
+               //    //  //Somebody disconnected , get his details and print
+               //    //  getpeername(sd , (struct sockaddr*)&address , \
+               //    //      (socklen_t*)&addrlen);
+               //    //  printf("Host disconnected , ip %s , port %d \n" ,
+               //    // inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+               //    //
+               //    //  //Close the socket and mark as 0 in list for reuse
+               //    //  close( sd );
+               //    //  client_socket[i] = 0;
+               // }
+               //
+               // //Echo back the message that came in
+               // else
+               // {
+               //     //set the string terminating NULL byte on the end
+               //     //of the data read
+               //     buffer[valread] = '\0';
+               //     send(sd , buffer , strlen(buffer) , 0 );
+               // }
            }
        }
    }
+ }
 
   //END OF WHILE LOOP
 

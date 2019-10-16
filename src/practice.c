@@ -21,7 +21,7 @@ void test_pointer_struct();
 int main(int argc, char const *argv[]) {
 
 
-  socket_listening(NULL, 8555, 1);
+  socket_listening(NULL, 8555, 5);
   free_receive();
   // init_queue(1);
   // int a = 0;
