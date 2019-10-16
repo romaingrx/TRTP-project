@@ -305,7 +305,7 @@ void window_inc(int connection){
 }
 
 
-void send_ack(uint8_t n, uint32_t time,int connection){
+void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
   //Pour pas envoyer le mauvais ack
   if(head[connection] != NULL){
@@ -314,20 +314,36 @@ void send_ack(uint8_t n, uint32_t time,int connection){
     }
   }
   uint8_t toack = 0;
-  if(n != 255){
-    toack = n+1;
-  }
+  if(n != 255){toack = n+1;}
 
   if(log_out){
-  printf("ACK %d\n", toack);
-}
+  printf("ACK %d\n", toack);}
 
   //HERE GENERATE A PACKET AND SEND IT via sockets
   //With SEQNUM = n+1
   //TIMESTAMP = TIME
+  pkt_t* ackpacket = pkt_new();
+  pkt_set_type(ackpacket,type);
+  pkt_set_tr(ackpacket, 1);
+  pkt_set_window(ackpacket, windowsize[connection]);
+  if(type == PTYPE_NACK)toack--;
+  pkt_set_seqnum(ackpacket, toack);
+  pkt_set_length(ackpacket,0);
+  pkt_set_timestamp(ackpacket,temps);
+
+  size_t len = 1024;
+  char* donnees = malloc(sizeof(char)*len);
+  pkt_encode(ackpacket, donnees, &len);
+  pkt_del(ackpacket);
+
+  //TODO: Envoyer donnees via sockets, mais faut la socket et
+  //la bonne addresse
+  free(donnees);
+
+
 
   lastackn[connection] = n;
-  lastackt[connection] = time;
+  lastackt[connection] = temps;
 
 
   if(window_start[connection] == n){
@@ -342,8 +358,9 @@ void send_ack(uint8_t n, uint32_t time,int connection){
 
 int data_req(pkt_t* pkt, int connection){
 
-
-  //TODO (rapide):
+  if(pkt->TR==1){
+    send_ack(pkt->SEQNUM, pkt->TIMESTAMP,connection, PTYPE_NACK);
+  }
   if(pkt->WINDOW != windowsize[connection]){
     window_end[connection] = window_start[connection]+pkt->WINDOW -1;
     windowsize[connection] = pkt->WINDOW;
@@ -373,7 +390,7 @@ int data_req(pkt_t* pkt, int connection){
   if(n == next[connection]){
     //If the packet is in sequence
     next_inc(connection);
-    send_ack(pkt->SEQNUM, pkt->TIMESTAMP, connection);
+    send_ack(pkt->SEQNUM, pkt->TIMESTAMP, connection, PTYPE_ACK);
     data_ind(pkt, connection) ;
 
 
@@ -402,7 +419,7 @@ int data_req(pkt_t* pkt, int connection){
       }
     }
     buffer_add(pkt, connection);
-    send_ack(lastackn[connection],lastackt[connection], connection);
+    send_ack(lastackn[connection],lastackt[connection], connection, PTYPE_ACK);
     return 0;
   }
 }
@@ -414,7 +431,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   pkt_t* packet = pkt_new();
   pkt_status_code status = pkt_decode(data, len, packet);
   if(status != PKT_OK){
-        send_ack(lastackn[connection],lastackt[connection] ,connection);
+        send_ack(lastackn[connection],lastackt[connection] ,connection, PTYPE_ACK);
         if(log_out){
         printf("Packet invalid: %d\n",status);}
         return status;

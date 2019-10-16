@@ -18,7 +18,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection);
 //correspondante
 
 //ATTENTION ELLE NE MARCHE PAS ENCORE HOHO
-void send_ack(uint8_t n, uint32_t time,int connection);
+void send_ack(uint8_t n, uint32_t time,int connection, ptypes_t type);
 
 
 //Initialise cette interface, à appeler dans la main

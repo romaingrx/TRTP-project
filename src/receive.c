@@ -51,9 +51,8 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     clients = malloc(sizeof(struct sockaddr_in6));
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     printf("Added client 0\n");
-    printf("%s\n", adr1);
-
-      return 0;
+      //
+      // return 0;
   }
 
   for(int i = 0; i<max_clients; i++){
@@ -64,10 +63,13 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     if(strcmp(adr1,adr2)==0){
       //Ici on a recu le message buffer du client indice i;
       printf("Received message from client %d:::%s\n",  i, buffer);
+
+      treat_bytestream(buffer, 1024, i);
+
       return 0;
     }
     else{
-      printf("OUOPS\n");
+      printf("Oupsy doupsy qui c'est qui n'ira pas au concert de SHANIA TWAIN!!!\n");
     }
   }
 
@@ -112,7 +114,7 @@ int socket_listening(char* hostname, int port, int n_connections){
              printf("Error reading: %s\n", strerror(errno));
            }
            treat_message_from(address, buffer, 1024);
-           printf("Received: %s", buffer);
+           printf("Received: %s\n", buffer);
 
 
 
