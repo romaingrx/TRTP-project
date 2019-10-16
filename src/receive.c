@@ -19,13 +19,14 @@
 int print = 0;
 
 //All needed variables for socket_listening.
-int *client_socket, max_clients;
-struct sockaddr_in6 address, newaddress;
+int max_clients;
+struct sockaddr_in6 address;
+struct sockaddr_in6* clients = NULL;
 fd_set readfds;
 
 
 void free_receive(){
-  free(client_socket);//
+  free(clients);//
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
@@ -44,24 +45,46 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
     return 0;
 }
 
-int socket_listening(char* hostname, int port, int n_connections){
-  int master_socket;
-  int addrlen, max_sd=0; //mas_sd désigne le "dernier" socket assigné
-  char buffer[512];
-  printf("Socket listening\n");
-  client_socket = malloc(sizeof(int)*n_connections);
-  max_clients = n_connections;
-  //Initialising all client sockets to 0
-  for (int i = 0; i < max_clients; i++)   { client_socket[i] = -1;  }
 
-  //CREATING AND INITIALISING A MASTER SOCKET
-  if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
-  {
-      printf("Create master socket failed");
-      return -1;
+int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
+  if(clients == NULL){
+    clients = malloc(sizeof(struct sockaddr_in6));
+    memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
+    printf("Added client 0\n");
+    printf("%s\n", adr1);
+
+      return 0;
   }
 
-  //END OF INITIALISING MASTER socket
+  for(int i = 0; i<max_clients; i++){
+    char adr1[INET6_ADDRSTRLEN];
+    char adr2[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6,&clients[i].sin6_addr, adr1, INET6_ADDRSTRLEN);
+    inet_ntop(AF_INET6,&address.sin6_addr, adr2, INET6_ADDRSTRLEN);
+    if(strcmp(adr1,adr2)==0){
+      //Ici on a recu le message buffer du client indice i;
+      printf("Received message from client %d:::%s\n",  i, buffer);
+      return 0;
+    }
+    else{
+      printf("OUOPS\n");
+    }
+  }
+
+}
+
+int socket_listening(char* hostname, int port, int n_connections){
+  max_clients = 1;
+  int master_socket;
+  int addrlen;
+  char buffer[1024];
+  printf("Socket listening\n");
+
+
+  if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
+  {printf("Create master socket failed"); return -1;}
+
+
   //WHILE LOOP
   while(1)
    {
@@ -69,25 +92,7 @@ int socket_listening(char* hostname, int port, int n_connections){
        FD_ZERO(&readfds);
        //add master socket to set
        FD_SET(master_socket, &readfds);
-       max_sd = master_socket;
-
-       //add child sockets to set
-       for (int  i = 0 ; i < max_clients ; i++)
-       {
-           //socket descriptor
-           int sd = client_socket[i];
-           //if valid socket descriptor then add to read list
-
-           if(sd > 0) //Si ils sont à -1 on les ajoute pas donc parfait
-               FD_SET( sd , &readfds);
-
-           //highest file descriptor number, need it for the select function
-           if(sd > max_sd)
-               max_sd = sd;
-       }
-
-       //wait for an activity on one of the sockets , timeout is NULL ,
-       //so wait indefinitely
+       int max_sd = master_socket;
 
        int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
 
@@ -101,86 +106,30 @@ int socket_listening(char* hostname, int port, int n_connections){
        //then its an incoming connection
        if (FD_ISSET(master_socket, &readfds))
        {
-           int bytesread = recvfrom(master_socket, buffer, 513,MSG_WAITALL, (struct sockaddr*) &newaddress, (socklen_t*)&addrlen);
+            struct sockaddr_in6 newaddress;
+           int bytesread = recvfrom(master_socket, buffer, 1024,MSG_WAITALL, (struct sockaddr*) &newaddress, (socklen_t*)&addrlen);
            if(bytesread <0){
              printf("Error reading: %s\n", strerror(errno));
            }
-
+           treat_message_from(address, buffer, 1024);
            printf("Received: %s", buffer);
 
+
+
            //ICI JE CONNECTE NEWSOCKET A LA SOURCE
-           int errconnect  = connect(master_socket,(struct sockaddr *) &newaddress, addrlen);
+           //int errconnect  = connect(master_socket,(struct sockaddr *) &newaddress, addrlen);
            // printf("Errconnect returns: %d and err: %s\n", errconnect,strerror(errno));
-           char* message = "Bill Gates te remercie\n";
-           if(send(master_socket, message, strlen(message), 0) <1)
-           {
-               printf("Send error: %s\n",strerror(errno));
-           }
+           // char* message = "Bill Gates te remercie\n";
+           // if(send(master_socket, message, strlen(message), 0) <1)
+           // {
+           //     printf("Send error: %s\n",strerror(errno));
+           // }
 
-           //add new socket to array of sockets
-           for (int i = 0; i < max_clients; i++)
-           {
-               //if position is empty thus filled with -1
-               if( client_socket[i] == -1)
-               {
-                   client_socket[i] = master_socket;
-                   printf("Adding to list of sockets as %d\n" , i);
-                   fflush(stdout);
-                   i = max_clients +1;
-               }
-           }
-           if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
-           {
-               printf("Create new secondary master socket failed");
-               return -1;
-           }
 
        }
-       else{
-       //else its some IO operation on some other socket
-       for (int i = 0; i < max_clients; i++)
-       {
-           int sd = client_socket[i];
-
-           if (FD_ISSET(sd, &readfds))
-           {
-               //Check if it was for closing , and also read the
-               //incoming message$
-               int valread;
-               char buffer[513];
-               valread = recv(sd, &buffer, 513,0);
-               // if ((valread = read( sd , buffer, 1024)) == 0)
-               // {
-               //    //  //Somebody disconnected , get his details and print
-               //    //  getpeername(sd , (struct sockaddr*)&address , \
-               //    //      (socklen_t*)&addrlen);
-               //    //  printf("Host disconnected , ip %s , port %d \n" ,
-               //    // inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
-               //    //
-               //    //  //Close the socket and mark as 0 in list for reuse
-               //    //  close( sd );
-               //    //  client_socket[i] = 0;
-               // }
-               //
-               // //Echo back the message that came in
-               // else
-               // {
-               //     //set the string terminating NULL byte on the end
-               //     //of the data read
-               //     buffer[valread] = '\0';
-               //     send(sd , buffer , strlen(buffer) , 0 );
-               // }
-           }
-       }
-   }
  }
-
-  //END OF WHILE LOOP
-
-
-
-
 }
+
 
 int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6){
     int status;
