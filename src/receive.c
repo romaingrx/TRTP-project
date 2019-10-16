@@ -25,7 +25,7 @@ fd_set readfds;
 
 
 void free_receive(){
-  free(client_socket);
+  free(client_socket);//
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
