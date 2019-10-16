@@ -20,7 +20,7 @@ void test_pointer_struct();
 
 int main(int argc, char const *argv[]) {
   init_queue(1);
-
+  int a = 0;
 
   pkt_t *pkt = pkt_new();
   pkt->TYPE = 0b01;
@@ -40,8 +40,12 @@ int main(int argc, char const *argv[]) {
   size_t coucou = 1024;
   pkt_encode(pkt, donnees,&coucou);
 
+  pkt_del(pkt);
+
 
   treat_bytestream(donnees, coucou, 0);
+    free(donnees);
+  // data_req(pkt,0);
 
   free_queue();
 return 0;
