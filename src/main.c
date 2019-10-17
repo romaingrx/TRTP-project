@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 #include "packet.h"
+=======
+#include "packet_interface.h"
+#include "receive.h"
+>>>>>>> b5fb103e8ae62a83ea6a06463dc77b306ac9f7ec
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,22 +13,21 @@
 #include <math.h>
 #include <errno.h>
 
-char *hostname = NULL, *port = NULL, *filename = NULL, *format = NULL;
-size_t connexions;
 
 void err_malloc(char *text){
     fprintf(stderr, "[main] Pas réussi à allouer de la mémoire pour %s.\n", text);
 }
 
-void del(){
+void all_free(char * hostname,char * format){
     if(hostname != NULL){free(hostname);}
-    if(port != NULL){free(port);}
-    if(filename != NULL){free(filename);}
     if(format != NULL){free(format);}
 }
 
 int main(int argc, char **argv)
 {
+    char *hostname = NULL, *format = NULL;
+    int connections = -1, port;
+
     if (argc < 3) {
         printf("Need at least the hostname and the port.\n");
         fprintf(stderr, "[main] Pas reçu assez d'arguments (hostanme et port).\n");
@@ -34,10 +38,7 @@ int main(int argc, char **argv)
     while ((opt = getopt(argc, argv, "f:o:m:")) != -1) {
         switch (opt) {
             case 'f':
-                filename = malloc(sizeof(optarg));
-                if(filename == NULL){err_malloc("FILENAME"); return EXIT_FAILURE;}
-                strcpy(filename, optarg);
-                printf("FILENAME : %s\n", filename);
+                fprintf(stderr, "[main] Le serveur ne prend pas -f comme argument.\n");
                 break;
             case 'o':
                 format = malloc(sizeof(optarg));
@@ -46,20 +47,26 @@ int main(int argc, char **argv)
                 printf("FORMAT : %s\n", format);
                 break;
             case 'm':
-                connexions = atoi(optarg);
-                printf("CONNEXIONS : %zu\n", connexions);
+                connections = atoi(optarg);
+                printf("Connections : %d\n", connections);
                 break;
         }
     }
+    if(format == NULL){
+        format = malloc(sizeof(char)*11);
+        strcpy(format, "File %d.txt");
+    }
+
     hostname = malloc(sizeof(argv[optind]));
     if(hostname == NULL){err_malloc("HOSTNAME"); return EXIT_FAILURE;}
     strcpy(hostname, argv[optind]);
-    port = malloc(sizeof(argv[optind+1]));
-    if(port == NULL){err_malloc("PORT"); return EXIT_FAILURE;}
-    strcpy(port, argv[optind+1]);
+    port = (int)atoi(argv[optind+1]);
+
+
 
     printf("HOSTNAME : %s\n", hostname);
-    printf("PORT : %s\n", port);
-    del();
+    printf("PORT : %d\n", port);
+    receive(connections, hostname, port, format);
+    all_free(hostname, format);
     return 0;
 }
