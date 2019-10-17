@@ -2,7 +2,9 @@
 
 
 
-int socket_listening(char* hostname, int port, int n_connections);
+int socket_listening(char* hostname, int port, int n_connections, char * main_format);
+
+int new_client();
 
 void free_receive();
 /*
@@ -43,7 +45,7 @@ int openFile();
  * @return : -1 si une erreur survient
  *           sinon 0
  */
-int closeFile(const int index);
+int closeFiles();
 
 /*
  * Écrit dans le fichier correspondant à l'indice du client

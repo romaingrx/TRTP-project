@@ -13,12 +13,9 @@
 #include <netinet/in.h> // sockaddr_in6
 #include <netdb.h> // addrinfo
 #include <errno.h>
-<<<<<<< HEAD
 #include <unistd.h>//read()
 #include <fcntl.h> // for open
 
-=======
->>>>>>> b5fb103e8ae62a83ea6a06463dc77b306ac9f7ec
 #include <arpa/inet.h>
 
 
@@ -36,10 +33,14 @@ int clients_known;
 
 fd_set readfds;
 
+int new_client(){
+    if(realloc(file_descriptors, len_format * clients_known) == NULL){return -1;}
+    return openFile();
+}
 
 void free_receive(){
-
-  free(clients);//
+    if(file_descriptors != NULL){free(file_descriptors);}
+    if(clients != NULL){free(clients);}
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
@@ -63,6 +64,8 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
 int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients == NULL){
     clients = malloc(sizeof(struct sockaddr_in6));
+    file_descriptors = malloc(len_format);
+    if(openFile()==-1){return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     printf("Added client 0\n");
       //
@@ -85,16 +88,23 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   }
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
   clients_known++;
+  if(new_client() == -1){
+      fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
+      return -1;
+  }
   clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
   memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
   return 0;
 }
 
-int socket_listening(char* hostname, int port, int n_connections){
-  clients_known = 1;
-  int addrlen;
-  char buffer[1024];
-  printf("Socket listening\n");
+int socket_listening(char* hostname, int port, int n_connections, char * main_format){
+    max_connections = n_connections;
+    format = main_format;
+    len_format = strlen(format) + 4;
+    clients_known = 1;
+    int addrlen;
+    char buffer[1024];
+    printf("Socket listening\n");
 
 
   if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
@@ -148,6 +158,7 @@ int socket_listening(char* hostname, int port, int n_connections){
  }
  free_receive();
  free_queue();
+ closeFiles();
  return 0;
 }
 
@@ -216,16 +227,18 @@ int receive(int connections, char * hostname, int port, char * main_format){
 
 int openFile(){
     char filename[len_format];
-    int err = snprintf(filename, len_format, format, iterator_file);
+    snprintf(filename, len_format, format, clients_known-1);
     int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
-    file_descriptors[iterator_file] = filefd;
-    iterator_file ++;
+    printf("%d\n", file_descriptors[0]);
+    file_descriptors[clients_known-1] = filefd;
     return 0;
 }
 
-int closeFile(const int index){
-    close(file_descriptors[index]);
+int closeFiles(){
+    for (size_t i = 0; i < clients_known; i++) {
+            close(file_descriptors[i]);
+    }
     return 0;
 }
 
