@@ -3,11 +3,13 @@
 #include <string.h>
 #include <math.h>
 #include "packet.h"
+#include <sys/socket.h>
+#include <netinet/in.h> // sockaddr_in6
 
 int log_out = 1;
 
 int master_socket;
-struct sockaddr_in6* clients = NULL;
+struct sockaddr_in6* clients;
 
 // TEMPORARY ZONE
 // typedef struct pkt{
@@ -329,7 +331,7 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   //TIMESTAMP = TIME
   pkt_t* ackpacket = pkt_new();
   pkt_set_type(ackpacket,type);
-  pkt_set_tr(ackpacket, 1);
+  pkt_set_tr(ackpacket, 0);
   pkt_set_window(ackpacket, windowsize[connection]);
   if(type == PTYPE_NACK)toack--;
   pkt_set_seqnum(ackpacket, toack);
@@ -343,6 +345,10 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
   //TODO: Envoyer donnees via sockets, mais faut la socket et
   //la bonne addresse
+  struct sockaddr_in6* tosend = clients;
+  struct sockaddr_in6 theone = clients[0];
+  //sendto(master_socket, donnees, len, 0,tosend, sizeof(struct sockaddr_in6));
+
   free(donnees);
 
 

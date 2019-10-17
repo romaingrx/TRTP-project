@@ -19,13 +19,14 @@
 int print = 0;
 
 //All needed variables for socket_listening.
-int max_clients;
+int clients_known;
 
 
 fd_set readfds;
 
 
 void free_receive(){
+
   free(clients);//
 }
 
@@ -56,7 +57,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
       // return 0;
   }
 
-  for(int i = 0; i<max_clients; i++){
+  for(int i = 0; i<clients_known; i++){
     char adr1[INET6_ADDRSTRLEN];
     char adr2[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6,&clients[i].sin6_addr, adr1, INET6_ADDRSTRLEN);
@@ -69,15 +70,16 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
 
       return 0;
     }
-    else{
-      printf("Oupsy doupsy qui c'est qui n'ira pas au concert de SHANIA TWAIN!!!\n");
-    }
   }
+  //On a pas trouvé dans le tableau, il faut rajouter du coup.
+  clients_known++;
+  clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
+  memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
   return 0;
 }
 
 int socket_listening(char* hostname, int port, int n_connections){
-  max_clients = 1;
+  clients_known = 1;
   int addrlen;
   char buffer[1024];
   printf("Socket listening\n");
