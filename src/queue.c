@@ -341,7 +341,6 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   size_t len = 1024;
   char* donnees = malloc(sizeof(char)*len);
   pkt_encode(ackpacket, donnees, &len);
-  pkt_del(ackpacket);
 
   //TODO: Envoyer donnees via sockets, mais faut la socket et
   //la bonne addresse

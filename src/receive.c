@@ -92,6 +92,8 @@ int socket_listening(char* hostname, int port, int n_connections){
   //WHILE LOOP
   while(1)
    {
+
+      memset(&buffer, 0, 1024);
        //clear the socket set
        FD_ZERO(&readfds);
        //add master socket to set
