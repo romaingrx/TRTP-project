@@ -345,9 +345,8 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
   //TODO: Envoyer donnees via sockets, mais faut la socket et
   //la bonne addresse
-  struct sockaddr_in6* tosend = clients;
-  struct sockaddr_in6 theone = clients[0];
-  sendto(master_socket, donnees, len, 0,(struct sockaddr*)tosend, sizeof(struct sockaddr_in6));
+  struct sockaddr_in6 theone = clients[connection];
+  sendto(master_socket, donnees, len, 0,(struct sockaddr*)&theone, sizeof(struct sockaddr_in6));
 
   free(donnees);
 
