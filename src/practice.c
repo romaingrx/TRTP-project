@@ -18,6 +18,7 @@ void test_decode_all();
 void test_encode();
 void test_pointer_struct();
 
+
 int main(int argc, char const *argv[]) {
 
   init_queue(1);
@@ -86,7 +87,7 @@ void test_decode_header(){
   char *data = malloc(4);
   // data = (char*)&HEADER;
   memcpy(data, &HEADER, 4);
-  int err = pkt_decode((char*)&data, 4, pkt);
+  pkt_decode((char*)&data, 4, pkt);
 
   pkt_del(pkt);
 }
