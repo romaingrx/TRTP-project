@@ -1,4 +1,4 @@
-#include "packet_interface.h"
+#include "packet.h"
 #include "queue.h"
 #include "receive.h"
 
@@ -72,7 +72,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
       printf("Oupsy doupsy qui c'est qui n'ira pas au concert de SHANIA TWAIN!!!\n");
     }
   }
-
+  return 0;
 }
 
 int socket_listening(char* hostname, int port, int n_connections){

@@ -1,7 +1,7 @@
 C_MAIN     = src/main.c
 C_PRACTICE =  src/practice.c
-C_PACKET   = src/packet_implem.c
-H_PACKET   = src/packet_interface.h
+C_PACKET   = src/packet.c
+H_PACKET   = src/packet.h
 C_RECEIVE  = src/receive.c
 H_RECEIVE  = src/receive.h
 C_QUEUE    = src/queue.c
