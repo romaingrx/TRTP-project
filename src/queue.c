@@ -3,7 +3,12 @@
 #include <string.h>
 #include <math.h>
 #include "packet.h"
+
 int log_out = 1;
+
+int master_socket;
+struct sockaddr_in6* clients = NULL;
+
 // TEMPORARY ZONE
 // typedef struct pkt{
 //   int WINDOW;

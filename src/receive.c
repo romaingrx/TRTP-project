@@ -20,8 +20,8 @@ int print = 0;
 
 //All needed variables for socket_listening.
 int max_clients;
-struct sockaddr_in6 address;
-struct sockaddr_in6* clients = NULL;
+
+
 fd_set readfds;
 
 
@@ -30,6 +30,7 @@ void free_receive(){
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
+    struct sockaddr_in6 address;
     *master_socket = socket(AF_INET6, SOCK_DGRAM, 0);
     address.sin6_family = AF_INET6;
     if(hostname == NULL) address.sin6_addr=in6addr_any;
@@ -77,7 +78,6 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
 
 int socket_listening(char* hostname, int port, int n_connections){
   max_clients = 1;
-  int master_socket;
   int addrlen;
   char buffer[1024];
   printf("Socket listening\n");
@@ -108,12 +108,12 @@ int socket_listening(char* hostname, int port, int n_connections){
        //then its an incoming connection
        if (FD_ISSET(master_socket, &readfds))
        {
-            struct sockaddr_in6 newaddress;
+           struct sockaddr_in6 newaddress;
            int bytesread = recvfrom(master_socket, buffer, 1024,MSG_WAITALL, (struct sockaddr*) &newaddress, (socklen_t*)&addrlen);
            if(bytesread <0){
              printf("Error reading: %s\n", strerror(errno));
            }
-           treat_message_from(address, buffer, 1024);
+           treat_message_from(newaddress, buffer, 1024);
            printf("Received: %s\n", buffer);
 
 
