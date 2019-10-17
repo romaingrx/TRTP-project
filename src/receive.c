@@ -134,6 +134,9 @@ int socket_listening(char* hostname, int port, int n_connections){
 
        }
  }
+ free_receive();
+ free_queue();
+ return 0;
 }
 
 
