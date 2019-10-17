@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h> // write, close
 
-extern int prout;
 
 extern int master_socket;
 extern struct sockaddr_in6* clients;
+extern int * file_descriptors;
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);

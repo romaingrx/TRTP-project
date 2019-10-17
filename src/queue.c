@@ -5,6 +5,7 @@
 #include "packet.h"
 #include <sys/socket.h>
 #include <netinet/in.h> // sockaddr_in6
+#include <unistd.h> // write, close
 
 int log_out = 1;
 
@@ -62,9 +63,9 @@ void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
   printf("Successfully recieved data %d: %s\n", pkt->SEQNUM, pkt->PAYLOAD);}
+  printf("Write in the file \n");
+  write(connection, pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
-  // free(pkt->PAYLOAD);
-  // free(pkt);
 }
 //
 

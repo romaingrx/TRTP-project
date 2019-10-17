@@ -242,9 +242,9 @@ int closeFiles(){
     return 0;
 }
 
-int writeFile(const int index, const char * buf, size_t len){
-    return write(file_descriptors[index], buf, len);
-}
+// int writeFile(const int connection, const char * buf, size_t len){
+//     return write(file_descriptors[connection], buf, len);
+// }
 
 // int printfile(char * filename, char * data, int len, int connection){
 //     int fd, err;

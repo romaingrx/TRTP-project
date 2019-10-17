@@ -52,4 +52,4 @@ int closeFiles();
  * @return : -1 si une erreur survient
  *           sinon le nombre de byte écrit
  */
-int writeFile(const int index, const char * buf, size_t len);
+// static int writeFile(const int index, const char * buf, size_t len);
