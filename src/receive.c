@@ -98,6 +98,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
 }
 
 int socket_listening(char* hostname, int port, int n_connections, char * main_format){
+  init_queue(n_connections);
     max_connections = n_connections;
     format = main_format;
     len_format = strlen(format) + 4;
