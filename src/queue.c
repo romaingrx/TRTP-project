@@ -12,6 +12,7 @@ int log_out = 1;
 int master_socket;
 struct sockaddr_in6* clients;
 int * file_descriptors = NULL;
+int clients_known;
 // TEMPORARY ZONE
 // typedef struct pkt{
 //   int WINDOW;
@@ -395,6 +396,7 @@ int data_req(pkt_t* pkt, int connection){
     //2/ Free this connection's buffer
     //3/ Make sure queue has a free spot for any future connections
     //4/ Clear the known address in the clients list
+    clients_known--;
     close(file_descriptors[connection]);
     free_buffer(connection);
     define_connection(connection);

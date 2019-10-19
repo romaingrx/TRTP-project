@@ -29,7 +29,7 @@ bool MAX = true;
 
 
 // All needed variables for socket_listening.
-int clients_known;
+
 
 
 fd_set readfds;
@@ -122,7 +122,7 @@ int socket_listening(char* hostname, int port, int n_connections, char * main_fo
 
 
   //WHILE LOOP
-  while(1)
+  while(clients_known > 0)
    {
 
       memset(&buffer, 0, 1024);
