@@ -34,8 +34,8 @@ bool MAX = true;
 fd_set readfds;
 
 int new_client(){
-    if(realloc(file_descriptors, len_format * clients_known) == NULL){return -1;}
-    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){return -1;}
+    if(realloc(file_descriptors, len_format * clients_known) == NULL){fprintf(stderr"[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
+    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){fprintf(stderr"[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
     return openFile();
 }
 
@@ -66,7 +66,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients == NULL){
     clients = malloc(sizeof(struct sockaddr_in6));
     file_descriptors = malloc(len_format);
-    if(openFile()==-1){return -1;}
+    if(openFile()==-1){fprintf(stderr"[treat_message_from] openfile: %s", strerror(errno));return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     printf("Added client 0\n");
   }
@@ -116,7 +116,7 @@ int socket_listening(char* hostname, int port, int n_connections, char * main_fo
 
 
   if (create_master_socket(&master_socket, hostname, port, &addrlen) == -1){
-      fprintf(stderr, "Create master socket failed\n");
+      fprintf(stderr, "Create master socket failed: %s\n", strerror(errno));
       return -1;}
 
 
@@ -146,7 +146,7 @@ int socket_listening(char* hostname, int port, int n_connections, char * main_fo
            struct sockaddr_in6 newaddress;
            int bytesread = recvfrom(master_socket, buffer, 1024,MSG_WAITALL, (struct sockaddr*) &newaddress, (socklen_t*)&addrlen);
            if(bytesread <0){
-             printf("Error reading: %s\n", strerror(errno));
+             fprintf(stderr, "[SOCKET LISTENING] recvfrom: %s\n", strerror(errno));
            }
            treat_message_from(newaddress, buffer, 1024);
            printf("Received: %s\n", buffer);
