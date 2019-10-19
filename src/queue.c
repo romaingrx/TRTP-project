@@ -45,8 +45,9 @@ node_t** head;
 //Frees the packet afterwards
 void data_ind(pkt_t *pkt, int connection){
 
-  if(log_out){
-  printf("Successfully recieved data %d: %s\n", pkt->SEQNUM, pkt->PAYLOAD);}
+  // if(log_out){
+  //   char* payl = pkt_get_payload(pkt);
+  // printf("Successfully recieved data%d : %s\n",pkt->SEQNUM, payl);}
   printf("Write in the file \n");
   write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
