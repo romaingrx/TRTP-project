@@ -20,11 +20,11 @@ void test_encode();
 void test_pointer_struct();
 void write_packet(int seqnum, char * payload);
 
-int main(int argc, char const *argv[]) {
+int maissn(int argc, char const *argv[]) {
      write_packet(0, "Grosse grosse bite de noir");
     return 0;
 }
-int masin(int argc, char const *argv[]) {
+int main(int argc, char const *argv[]) {
 
   init_queue(1);
   socket_listening(NULL, 8555, 5, "Coucou %d.txt");
