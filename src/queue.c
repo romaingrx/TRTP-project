@@ -6,24 +6,17 @@
 #include <sys/socket.h>
 #include <netinet/in.h> // sockaddr_in6
 #include <unistd.h> // write, close
+#include <errno.h>
 
-int log_out = 1;
+int log_out = 1; //Makes the program log to stdout
 
-int master_socket;
-struct sockaddr_in6* clients;
-int * file_descriptors = NULL;
-int clients_known;
-// TEMPORARY ZONE
-// typedef struct pkt{
-//   int WINDOW;
-//   int SEQNUM;
-//   int valid_packet;
-// }pkt_t;
-
-// END OF TEMPORARY ZONE
-
-int n_bits_encode_window = 8;
-int n_connections = -1;
+//Global, extern variables:
+int master_socket; //The socket for receiving
+struct sockaddr_in6* clients; //Saves the IP adresses of known clients
+int * file_descriptors = NULL; //Stores the file descriptors for the known clients
+int clients_known; //Number of clients CURRENTLY known
+int n_bits_encode_window = 8; //should remain constant
+int n_connections = -1; //Number of maximal connections (given as argument to main.)
 
 int get_nconnections(){
   return n_connections;
@@ -33,7 +26,8 @@ typedef struct node {
     struct node * next;
 } node_t;
 
-
+//The following variables are arrays that store the variables for EACH connection con_indice
+//windowsize[] = {1,2,3,5} means connection 0 has window of 1, con 1 of 2, con 2 of 3, con 3 of 5.
 int* windowsize = NULL;
 uint8_t* lastackn=NULL;
 uint32_t* lastackt = NULL;
@@ -46,7 +40,9 @@ node_t** head;
 
 
 
-
+//Call this function, by giving it a malloc'd packet and a connection Number
+//This function will write the payload to the file descriptor associated to the connection indice
+//Frees the packet afterwards
 void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
@@ -75,52 +71,52 @@ int define_connection(int con_indice){
   return 0;
 }
 
-
+//This function initialises a queue (malloc's the array of varaible. HAS TO BE CALLED at the start of program)
 int init_queue(int n){
   n_connections  = n;
 
   int* err;
   err = (int*)malloc(sizeof(int)*n_connections);
-  if(err<0){
-    fprintf(stderr,"init_queue malloc erreur");
+  if(err==NULL){
+    fprintf(stderr,"[init_queue] malloc erreur");
     return(-1);
   }
   windowsize = err;
 
   lastackn = (uint8_t*)malloc(sizeof(uint8_t)*n_connections);
-  if(lastackn<0){
+  if(lastackn==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   lastackt = (uint32_t*)malloc(sizeof(uint32_t)*n_connections);
-  if(lastackt<0){
+  if(lastackt==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
   err = (int*)malloc(sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   next = err;
 
   err = (int*)malloc(sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   window_start = err;
 
   err = (int*)malloc(sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
   window_end = err;
   head = (node_t**)malloc(sizeof(node_t*)*n_connections);
-  if(head<0){
+  if(head==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
@@ -133,9 +129,6 @@ int init_queue(int n){
     window_end[i]=0;
     define_connection(i);
   }
-
-
-
   return 0;
 }
 
@@ -146,39 +139,39 @@ int add_queue(){
 
   int* err;
   err = (int*)realloc(windowsize, sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   windowsize = err;
 
   lastackn= (uint8_t*)realloc(lastackn, sizeof(uint8_t)*n_connections);
-  if(lastackn<0){
+  if(lastackn==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   lastackt= (uint32_t*)realloc(lastackt, sizeof(uint32_t)*n_connections);
-  if(lastackt<0){
+  if(lastackt==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
   err = (int*)realloc(next, sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   next = err;
 
   err = (int*)realloc(window_start, sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   window_start = err;
 
   err = (int*)realloc(window_end, sizeof(int)*n_connections);
-  if(err<0){
+  if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
@@ -187,7 +180,7 @@ int add_queue(){
 
 
   head = (node_t**)realloc(head, sizeof(node_t*)*n_connections);
-  if(head<0){
+  if(head==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
@@ -209,6 +202,7 @@ int add_queue(){
 
 
 //BUFFER IMPLEMENTATION
+//Adds a node to the buffer. The nodes are stored in increasing seqnum order.
 void buffer_add(pkt_t *pkt, int connection){
   node_t *newnode = (node_t*)malloc(sizeof(node_t));
   int n = pkt->SEQNUM;
@@ -237,6 +231,7 @@ void buffer_add(pkt_t *pkt, int connection){
   }}
   if(log_out){printf("ADDED %d to buffer of connection %d\n", newnode->data->SEQNUM, connection);}
 }
+//Looks at the head of the buffer
 pkt_t* buffer_peak(int connection){
   if(head[connection]==NULL){
     return NULL;
@@ -244,13 +239,13 @@ pkt_t* buffer_peak(int connection){
   pkt_t* ret = head[connection]->data;
   return ret;
 }
-
+//Removes the head from the buffer
 void buffer_remove(int connection){
   node_t* oldhead = head[connection];
   head[connection] = head[connection]->next;
   free((void*)oldhead);
 }
-
+//Frees the whole buffer of a connection
 void free_buffer(int connection){
   while(head[connection] != NULL){
     pkt_del(head[connection]->data);
@@ -289,6 +284,7 @@ void next_inc(int connection){
   return;
 }
 
+//Shitfts the window of 1 to the right on a given connection
 void window_inc(int connection){
   if(window_start[connection] < pow(2,n_bits_encode_window)-1){window_start[connection] ++;}
   else {window_start[connection] = 0;}
@@ -300,24 +296,26 @@ void window_inc(int connection){
   printf("[%d,%d]\n", window_start[connection], window_end[connection]);}
 }
 
-
+//Sends an ack packet with the given arguments to the socket associated to the given connecton number.
 void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
-  //Pour pas envoyer le mauvais ack
   if(head[connection] != NULL){
     if(head[connection]->data->SEQNUM ==  n+1){
       return;
     }
   }
+  //The little if head connection != null makes sure only the last ack is being sent when several
+  //packets are stored in the buffer.
+
+
+
   uint8_t toack = 0;
   if(n != 255){toack = n+1;}
 
   if(log_out){
   printf("ACK %d\n", toack);}
 
-  //HERE GENERATE A PACKET AND SEND IT via sockets
-  //With SEQNUM = n+1
-  //TIMESTAMP = TIME
+  //Gere i'm generatine a packet which I'll send via sockets.
   pkt_t* ackpacket = pkt_new();
   pkt_set_type(ackpacket,type);
   pkt_set_tr(ackpacket, 0);
@@ -329,12 +327,15 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
   size_t len = 1024;
   char* donnees = malloc(sizeof(char)*len);
-  pkt_encode(ackpacket, donnees, &len);
+  pkt_encode(ackpacket, donnees, &len); //always returns PKT_OK
 
   //TODO: Envoyer donnees via sockets, mais faut la socket et
   //la bonne addresse
   struct sockaddr_in6 theone = clients[connection];
-  sendto(master_socket, donnees, len, 0,(struct sockaddr*)&theone, sizeof(struct sockaddr_in6));
+  if(  sendto(master_socket, donnees, len, 0,(struct sockaddr*)&theone, sizeof(struct sockaddr_in6)) == -1){
+    fprintf(stderr, "[SEND ACK] error using sendto: %s \n", strerror(errno));
+  }
+
 
   free(donnees);
 
