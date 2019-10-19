@@ -133,7 +133,7 @@ pkt_status_code pkt_decode(char *data, const size_t len, pkt_t *pkt)
 
 
      free(PAYLOAD);
-     free(data);
+     //free(data); c'est pas un malloc couillon
      return PKT_OK;
 }
 
