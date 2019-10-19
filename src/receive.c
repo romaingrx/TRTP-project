@@ -227,7 +227,7 @@ int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
 int openFile(){
     char filename[len_format];
     snprintf(filename, len_format, format, clients_known-1);
-    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 700);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
     printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[clients_known-1] = filefd;

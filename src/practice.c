@@ -20,70 +20,13 @@ void test_encode();
 void test_pointer_struct();
 void write_packet(int seqnum, char * payload);
 
-int maissn(int argc, char const *argv[]) {
-     write_packet(0, "Grosse grosse bite de noir");
-    return 0;
-}
 int main(int argc, char const *argv[]) {
-
   init_queue(1);
   socket_listening(NULL, 8555, 5, "Coucou %d.txt");
   free_receive();
   free_queue();
-  // pkt_t *pkt = pkt_new();
-  // pkt->TYPE = 0b01;
-  // pkt->TR = 0;
-  // pkt->WINDOW = 17;
-  // pkt->L = 0;
-  // pkt->LENGTH = 30;
-  // pkt->SEQNUM = 0;
-  // pkt->TIMESTAMP = 66;
-  // pkt->CRC1 = 37;
-  // pkt->CRC2 = 666;
-  // char* data = "GROSSE GROSSE BITE DE NOIR";
-  // pkt_set_payload(pkt, data, strlen(data)+1);
-  //
-  //
-  // char* donnees = malloc(sizeof(char)*1024);
-  // size_t coucou = 1024;
-  // pkt_encode(pkt, donnees,&coucou);
-  //
-  //
-  //
-  // treat_bytestream(donnees, coucou, 0);
-  // data_req(pkt,0);
-
-  free_queue();
-return 0;
+  return 0;
 }
-
-    // int err;
-    // //struct sockaddr_in6 *ipv6 = malloc(sizeof(struct sockaddr_in6));
-    // struct sockaddr_in6 ipv6;
-    // memset(&ipv6, 0, sizeof(ipv6));
-    //
-    // // err = IPV6_translater(argv[1], &ipv6);
-    // int sockfd = socket_init(&ipv6, atoi(argv[2]), NULL, -1);
-    //
-    //
-    // ipv6.sin6_family = AF_INET6;
-    // ipv6.sin6_port = htons(atoi(argv[2]));
-    // char v6dst[INET6_ADDRSTRLEN];
-    //
-    // strcpy(v6dst, argv[1]);
-    //
-    // inet_pton(AF_INET6, v6dst, &(ipv6.sin6_addr));
-    //
-    // if (bind(sockfd, (struct sockaddr *) &ipv6, sizeof(ipv6)) == -1){
-    //     printf("%s  \n", strerror(errno));
-    // }
-    //
-    // char *buffer = malloc(1024);
-    // err = recv(sockfd, buffer, 1024, 0);
-    // printf("> %s\n", buffer);
-    //
-    // free(buffer);
-
 
 void test_decode_header(){
   pkt_t *pkt = pkt_new();
@@ -115,16 +58,6 @@ void test_pointer_struct(){
   char *a = "COUCOUL";
   pkt_set_payload(pkt, a, 8);
   pkt_set_crc2(pkt, 111);
-
-  // printf("TYPE \t%p\n", &(pkt->TYPE));
-  // printf("TR \t%p\n", &(pkt->TR));
-  // printf("WINDOW \t%p\n", &(pkt->WINDOW));
-  // printf("LENGTH \t%p\n", &(pkt->LENGTH));
-  // printf("SEQNUM \t%p\n", &(pkt->SEQNUM));
-  // printf("TIMESTAMP \t%u\n", pkt_get_timestamp(pktd));
-  // printf("CRC1 \t%u\n", pkt_get_crc1(pktd));
-  // printf("PAYLOAD \t%s\n", pkt_get_payload(pktd));
-  // printf("CRC2 \t%u\n", pkt_get_crc2(pktd));
 
 }
 
