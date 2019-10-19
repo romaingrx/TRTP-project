@@ -22,7 +22,6 @@
 int print = 0;
 int iterator_file = 0, len_format = 0, max_connections; // max_connections == -1 si pas de limite
 char * format = NULL;
-// int * file_descriptors = NULL;
 bool MAX = true;
 
 

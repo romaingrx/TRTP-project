@@ -12,13 +12,19 @@
 #include <sys/socket.h>
 #include <netinet/in.h> // sockaddr_in6
 #include <netdb.h> // addrinfo
-
+#include <unistd.h>
+#include <fcntl.h>
 void test_decode_header();
 void test_decode_all();
 void test_encode();
 void test_pointer_struct();
+void write_packet(int seqnum, char * payload);
 
 int main(int argc, char const *argv[]) {
+     write_packet(0, "Grosse grosse bite de noir");
+    return 0;
+}
+int masin(int argc, char const *argv[]) {
 
   init_queue(1);
   socket_listening(NULL, 8555, 5, "Coucou %d.txt");
@@ -124,45 +130,25 @@ void test_pointer_struct(){
 
 
 
-//
-// void test_encode(){
-//     pkt_t *pkt = pkt_new();
-//     pkt->TYPE = 0b01;
-//     pkt->TR = 0;
-//     pkt->WINDOW = 12;
-//     pkt->L = 0;
-//     pkt->LENGTH = 30;
-//     pkt->SEQNUM = 12;
-//     pkt->TIMESTAMP = 66;
-//     pkt->CRC1 = 37;
-//     pkt->CRC2 = 666;
-//     char* data = "GROSSE GROSSE BITE DE NOIR";
-//     pkt_set_payload(pkt, data, pkt->LENGTH);
-//
-//     size_t len = 128;
-//     char *buf = malloc(len);
-//     pkt_status_code status = pkt_encode(pkt, buf, &len);
-//     printf("TYPE : \t%u \n",((uint8_t)buf[0] >> 6));
-//     printf("TR : \t%u \n",((uint8_t)buf[0] >> 5) & 0b00000001);
-//     printf("WINDOW : \t%u \n",((uint8_t)buf[0]) & 0b00011111);
-//     printf("L : \t%u\n", (uint8_t)buf[1]>>7);
-//     printf("LENGTH : \t%u\n", (uint8_t)buf[1] & 0b01111111);
-//     char *text = malloc(27);
-//     memcpy(text, &buf[11], 27);
-//     printf("DATA : %s\n", text);
-//
-//     pkt_t *pktd = pkt_new();
-//     status = pkt_decode(buf, 128, pktd);
-//     printf("Type decode \t: %u\n",pkt_get_type(pktd));
-//     printf("TR decode \t: %u\n",pkt_get_tr(pktd));
-//     printf("Window decode \t: %u\n",pkt_get_window(pktd));
-//     printf("L decode \t: %u\n",pkt_get_l(pktd));
-//     printf("Length decode \t: %u\n",pkt_get_length(pktd));
-//     printf("Seqnum decode \t: %u\n",pkt_get_seqnum(pktd));
-//     printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
-//     printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
-//     printf("Timestamp decode \t: %u\n",pkt_get_timestamp(pktd));
-//     free(text);
-//     pkt_del(pkt);
-//     pkt_del(pktd);
-// }
+
+void write_packet(int seqnum, char * payload){
+    pkt_t *pkt = pkt_new();
+    pkt->TYPE = 0b01;
+    pkt->TR = 0;
+    pkt->WINDOW = 12;
+    pkt->SEQNUM = seqnum;
+    pkt_set_payload(pkt, payload, strlen(payload));
+
+    size_t len = 512;
+    char *buf = malloc(len);
+    printf("BEFORE LEN \t %zu \n", len);
+    pkt_encode(pkt, buf, &len);
+    printf("AFTER LEN \t %zu \n", len);
+    char filename[30];
+    char * format = "packets/packet%d";
+    snprintf(filename, strlen(format)+4, format, seqnum);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
+    write(filefd, buf, len);
+    close(filefd);
+    free(buf);
+}
