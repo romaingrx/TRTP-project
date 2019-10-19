@@ -7,15 +7,14 @@
 #include <unistd.h> // write, close
 // #include <sys/types.h>
 // #include <sys/stat.h>
-#include <fcntl.h> // open
 #include <string.h> // memset
 #include <sys/socket.h>
 #include <netinet/in.h> // sockaddr_in6
 #include <netdb.h> // addrinfo
 #include <errno.h>
 #include <unistd.h>//read()
-#include <fcntl.h> // for open
-
+#include <fcntl.h> // open
+#include <stdbool.h> // bool
 #include <arpa/inet.h>
 
 
@@ -24,10 +23,11 @@ int print = 0;
 int iterator_file = 0, len_format = 0, max_connections; // max_connections == -1 si pas de limite
 char * format = NULL;
 int * file_descriptors = NULL;
+bool MAX = true;
 
 
 
-//All needed variables for socket_listening.
+// All needed variables for socket_listening.
 int clients_known;
 
 
@@ -35,6 +35,7 @@ fd_set readfds;
 
 int new_client(){
     if(realloc(file_descriptors, len_format * clients_known) == NULL){return -1;}
+    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){return -1;}
     return openFile();
 }
 
@@ -68,8 +69,6 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     if(openFile()==-1){return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     printf("Added client 0\n");
-      //
-      // return 0;
   }
 
   for(int i = 0; i<clients_known; i++){
@@ -87,19 +86,24 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     }
   }
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
-  clients_known++;
-  if(new_client() == -1){
-      fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
-      return -1;
+  if ((!MAX) || (MAX && clients_known<max_connections)) {
+      clients_known++;
+      if(new_client() == -1){
+          fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
+          return -1;
+      }
+      // clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
+      memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
   }
-  clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
-  memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
   return 0;
 }
 
 int socket_listening(char* hostname, int port, int n_connections, char * main_format){
   init_queue(n_connections);
     max_connections = n_connections;
+    if(n_connections == -1){
+        MAX = false;
+    }
     format = main_format;
     len_format = strlen(format) + 4;
     clients_known = 1;
@@ -108,8 +112,9 @@ int socket_listening(char* hostname, int port, int n_connections, char * main_fo
     printf("Socket listening\n");
 
 
-  if( (create_master_socket(&master_socket, hostname, port, &addrlen)) == -1)
-  {printf("Create master socket failed"); return -1;}
+  if (create_master_socket(&master_socket, hostname, port, &addrlen) == -1){
+      fprintf(stderr, "Create master socket failed\n");
+      return -1;}
 
 
   //WHILE LOOP
@@ -214,24 +219,14 @@ int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
 }
 
 
-int receive(int connections, char * hostname, int port, char * main_format){
-    max_connections = connections;
-    format = malloc(sizeof(char)*strlen(main_format));
-    strcpy(format, main_format);
-    len_format = strlen(format) + 4;
-    if (max_connections != -1) {
-        file_descriptors = malloc(sizeof(int) * max_connections);
-    }
-    if(file_descriptors!= NULL){free(file_descriptors);}
-    return 0;
-}
+
 
 int openFile(){
     char filename[len_format];
     snprintf(filename, len_format, format, clients_known-1);
     int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
-    printf("%d\n", file_descriptors[0]);
+    printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[clients_known-1] = filefd;
     return 0;
 }

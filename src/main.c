@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 #include "packet.h"
-=======
-#include "packet_interface.h"
 #include "receive.h"
->>>>>>> b5fb103e8ae62a83ea6a06463dc77b306ac9f7ec
+#include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +63,9 @@ int main(int argc, char **argv)
 
     printf("HOSTNAME : %s\n", hostname);
     printf("PORT : %d\n", port);
-    receive(connections, hostname, port, format);
+    socket_listening(hostname, port, connections, format);
+    free_receive();
+    free_queue();
     all_free(hostname, format);
     return 0;
 }
