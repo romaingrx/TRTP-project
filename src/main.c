@@ -3,7 +3,6 @@
 =======
 #include "packet_interface.h"
 #include "receive.h"
->>>>>>> b5fb103e8ae62a83ea6a06463dc77b306ac9f7ec
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
