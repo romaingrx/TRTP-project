@@ -1,9 +1,6 @@
 #include "packet.h"
 #include "receive.h"
-<<<<<<< HEAD
 #include "queue.h"
-=======
->>>>>>> experimental-Ben
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
