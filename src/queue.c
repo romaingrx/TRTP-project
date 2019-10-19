@@ -11,7 +11,7 @@ int log_out = 1;
 
 int master_socket;
 struct sockaddr_in6* clients;
-
+int * file_descriptors = NULL;
 // TEMPORARY ZONE
 // typedef struct pkt{
 //   int WINDOW;
@@ -44,19 +44,6 @@ int* window_end=NULL;
 node_t** head;
 
 
-pkt_t* pkt_generate(int seq, int wid)
-{
-  pkt_t* packet = pkt_new();
-  packet->SEQNUM = seq;
-  packet->WINDOW = wid;
-  return packet;
-
-
-}
-
-int decode_pkt(pkt_t *pkt){
-  return 1;
-}
 
 
 void data_ind(pkt_t *pkt, int connection){
@@ -64,7 +51,7 @@ void data_ind(pkt_t *pkt, int connection){
   if(log_out){
   printf("Successfully recieved data %d: %s\n", pkt->SEQNUM, pkt->PAYLOAD);}
   printf("Write in the file \n");
-  write(connection, pkt_get_payload(pkt), pkt_get_length(pkt));
+  write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
 }
 //
@@ -365,18 +352,21 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
 
 
-
+//This function treats the selective repeat on a packet, on a given connections
+//Return value: -1 if error, 0 if all went well.
 int data_req(pkt_t* pkt, int connection){
-
+  //If packet was tronqued
   if(pkt->TR==1){
     send_ack(pkt->SEQNUM, pkt->TIMESTAMP,connection, PTYPE_NACK);
   }
+  //If variable window size
   if(pkt->WINDOW != windowsize[connection]){
     window_end[connection] = window_start[connection]+pkt->WINDOW -1;
     windowsize[connection] = pkt->WINDOW;
   }
 
 
+  //Checking if packet is in the receiving window.
   int n = pkt->SEQNUM;
   if(window_start[connection] < window_end[connection]){
     if(n < window_start[connection] || n > window_end[connection]){
@@ -397,6 +387,22 @@ int data_req(pkt_t* pkt, int connection){
       return 0;
     }
   }
+
+  if(pkt->TR == 0 && pkt->TYPE == PTYPE_DATA && pkt->LENGTH == 0){
+    //If entering here, it means this packet was the very last one of the file.
+    //I must
+    //1/ End the file descriptor
+    //2/ Free this connection's buffer
+    //3/ Make sure queue has a free spot for any future connections
+    //4/ Clear the known address in the clients list
+    close(file_descriptors[connection]);
+    free_buffer(connection);
+    define_connection(connection);
+    return 2;
+
+  }
+
+
   if(n == next[connection]){
     //If the packet is in sequence
     next_inc(connection);
@@ -436,7 +442,9 @@ int data_req(pkt_t* pkt, int connection){
 
 
 
-
+//Treats a packet, given as argument in a char*.
+//Thus decodes the packets and sends it to data_req.
+//Returns 0 if all went well, -1 if errors,
 pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   pkt_t* packet = pkt_new();
   pkt_status_code status = pkt_decode(data, len, packet);
@@ -446,6 +454,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
         printf("Packet invalid: %d\n",status);}
         return status;
   }
+
 
   return data_req(packet, connection);
 }

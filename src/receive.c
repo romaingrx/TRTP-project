@@ -22,8 +22,12 @@
 int print = 0;
 int iterator_file = 0, len_format = 0, max_connections; // max_connections == -1 si pas de limite
 char * format = NULL;
+<<<<<<< HEAD
 int * file_descriptors = NULL;
 bool MAX = true;
+=======
+
+>>>>>>> experimental-Ben
 
 
 
@@ -79,8 +83,11 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     if(strcmp(adr1,adr2)==0){
       //Ici on a recu le message buffer du client indice i;
       printf("Received message from client %d:::%s\n",  i, buffer);
+      if(treat_bytestream(buffer, 1024, i) ==2){
+        //Treats bytestream. If it returns 2, this was the last message of the connection.
+        //I can thus remove this client_known.
+      }
 
-      treat_bytestream(buffer, 1024, i);
 
       return 0;
     }
