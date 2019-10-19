@@ -34,8 +34,8 @@ bool MAX = true;
 fd_set readfds;
 
 int new_client(){
-    if(realloc(file_descriptors, len_format * clients_known) == NULL){fprintf(stderr"[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
-    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){fprintf(stderr"[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
+    if(realloc(file_descriptors, len_format * clients_known) == NULL){fprintf(stderr, "[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
+    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){fprintf(stderr, "[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
     return openFile();
 }
 
@@ -66,7 +66,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients == NULL){
     clients = malloc(sizeof(struct sockaddr_in6));
     file_descriptors = malloc(len_format);
-    if(openFile()==-1){fprintf(stderr"[treat_message_from] openfile: %s", strerror(errno));return -1;}
+    if(openFile()==-1){fprintf(stderr, "[treat_message_from] openfile: %s", strerror(errno));return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     printf("Added client 0\n");
   }
