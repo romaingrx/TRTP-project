@@ -25,12 +25,6 @@ int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6);
                  struct sockaddr_in6 *dest_addr, const int dest_port);
 
 
- /*
-  * Fonction générale qui initialise les variables globales et lance le processus
-  * @return : -1 si une erreur survient
-  *           sinon free les variables globales de receive.c et retourne 0 à la fin du processus
-  */
-int receive(int connections, char * hostname, int port, char * main_format);
 
 /*
  * Crée un file descriptor pour le fichier de sortie et le stock dans une
