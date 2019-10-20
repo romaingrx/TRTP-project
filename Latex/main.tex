@@ -38,6 +38,7 @@ L'envoyeur s'attend à recevoir un acquittement contenant le numéro de séquenc
 Avant d'envoyer le paquet d'acquittement, le récepteur vérifie son buffer contenant les paquets stockés, si le paquet n+1 y est stocké, aucun acquittement n'est envoyé et le paquet n+1 est traîté et délivré. Cet appel est récursif. Lorsque le buffer a été vidé de tous les paquets en séquence, l'acquittement n+1 peut être envoyé.
 \subsection{Connections concurrentes}
 %Expliquer comment c'est qu'on fait (l'array de buffers dans queue), l'array de file descriptors, l'array de addrinfo
+L'énoncé demande de traiter les connections concurrentes. Nous définissons une connection concurrente comme l'envoi d'un paquet provenant d'une adresse IP différente. Les adresses IP des envoyeurs sont stockées dans une liste. Chaque adresse est donc associée à un indice. Toutes les variables (windowsize, lastack, la liste chaînée) de la structure implémentant le selective repeat sont stockées dans une liste. Ainsi, chaque envoyeur est associé au i ème élément dans chaque liste de variables.
 
 \section{Evalutation}
 
