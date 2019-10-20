@@ -48,6 +48,7 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
     struct sockaddr_in6 address;
     *master_socket = socket(AF_INET6, SOCK_DGRAM, 0);
     address.sin6_family = AF_INET6;
+    address.sin6_flowinfo = 0;
     if(hostname == NULL) address.sin6_addr=in6addr_any;
     else inet_pton(AF_INET6, hostname, (void *)&address.sin6_addr.s6_addr);
     address.sin6_port =htons(port);
