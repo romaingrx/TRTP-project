@@ -28,10 +28,14 @@
 \section{Implémentation}
 \subsection{Selective repeat et fenêtre de connection}
 %Diamond girl je t’apprécie beaucoup, j’aimerais te prendre dans mes bras mais aussi tirer mon coup
+L'objectif de notre produit visant à envoyer des fichiers entiers, il semble indispensable d'implémenter un protocole qui assure la bonne réception de tous les paquets envoyés. Pour ce faire, nous implémentons un protocole suivant le principe de selective repeat. Lorsqu'un paquet est reçu, son destinataire renvoie un paquet d'acquittement portant le numéro de séquence du paquet suivant attendu. Si nous appliquons ce protocole paquet par paquet, nous limitons fortement la bande passante. C'est pourquoi l'envoyeur peut envoyer un nombre n de paquets à la suite dont le numéro de séquence est contenu dans la fenêtre de réception de taille souhaitée (équivalent à un intervalle d'entiers). Le récepteur acquittera uniquement les paquets dont le numéro de séquence est contenu dans la fenêtre de réception.
 
+Pour notre récepteur, la fenêtre de réception commence par [0,1]. Seul le paquet avec le numéro de séquence 0 ou 1 sera donc accepté. Le premier paquet reçu doit selon l'énoncé contenir la taille de la fenêtre souhaitée. La fenêtre du récepteur est par conséquent adaptée en taille, et les deux bornes sont incrémentées: [1,n-1]. Un paquet avec le numéro de séquence 0 ou supérieur à n sera ignoré. Pratiquement, la fenêtre de réception est stockée sous forme de deux integer: la borne inférieure et supérieure de la fenêtre.
+Lorsqu'un paquet est reçu si c'est le "prochain" numéro de séquence, il sera délivré et un acquitement sera généré. S'il n'est pas le prochain, mais qu'il est contenu dans la fenêtre de réception, il est stocké dans une liste chaînée triée par numéro de séquence croissant.
 \subsection{Génération d'acquitements}
 %Y'a trop rien a dire, mais je vais en gros expliquer comment c'est que le gros zozo delcoigne a fait ça
-
+L'envoyeur s'attend à recevoir un acquittement contenant le numéro de séquence du prochain paquet attendu. Lorsqu'un paquet est reçu et délivré, un paquet d'acquittement est généré. Son numéro de séquence correspont au numéro du paquet délivré +1, et son champ timestamp est la copie du dernier paquet délivré.
+Avant d'envoyer le paquet d'acquittement, le récepteur vérifie son buffer contenant les paquets stockés, si le paquet n+1 y est stocké, aucun acquittement n'est envoyé et le paquet n+1 est traîté et délivré. Cet appel est récursif. Lorsque le buffer a été vidé de tous les paquets en séquence, l'acquittement n+1 peut être envoyé.
 \subsection{Connections concurrentes}
 %Expliquer comment c'est qu'on fait (l'array de buffers dans queue), l'array de file descriptors, l'array de addrinfo
 
