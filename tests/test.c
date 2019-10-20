@@ -1,4 +1,6 @@
-#include "../src/packet_interface.h"
+#include "../src/packet.h"
+#include "../src/queue.h"
+#include "../src/receive.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,16 +13,19 @@
 void test_varuint_decode_encode();
 char* test_encode();
 void test_decode(char* buf);
+void test_queue();
+
 
 int main(int argc, char const *argv[]) {
     char* buf = test_encode();
     test_decode(buf);
     free(buf);
+    test_varuint_decode_encode();
+    test_queue();
     return 0;
 }
 
 void test_varuint_decode_encode(){
-    pkt_status_code status ;
     ssize_t err;
     size_t bytes = 2;
     uint16_t retval;
@@ -108,10 +113,10 @@ void test_queue(){
 
   char* donnees = malloc(sizeof(char)*1024);
   size_t coucou = 1024;
-  pkt_encode(pkt, donnees,coucou);
+  pkt_encode(pkt, donnees,&coucou);
 
   pkt_t* test2 = pkt_new();
-  pkt_status_code encoderr = pkt_decode(donnees, coucou,test2 );
+  pkt_decode(donnees, coucou,test2 );
   treat_bytestream(donnees, coucou, 0);
   // data_req(pkt,0);
 }
@@ -135,10 +140,10 @@ pkt_set_payload(pkt, data, strlen(data)+1);
 
 char* donnees = malloc(sizeof(char)*1024);
 size_t coucou = 1024;
-pkt_encode(pkt, donnees,coucou);
+pkt_encode(pkt, donnees,&coucou);
 
 pkt_t* test2 = pkt_new();
-pkt_status_code encoderr = pkt_decode(donnees, coucou,test2 );
+pkt_decode(donnees, coucou,test2 );
 treat_bytestream(donnees, coucou, 1);
 // data_req(pkt,0);
 }

@@ -318,7 +318,9 @@ pkt_status_code pkt_set_payload(pkt_t *pkt,
     if(pkt_get_payload(pkt) != NULL){free(pkt->PAYLOAD);}
     if(status != PKT_OK){return status;}
     pkt->PAYLOAD = (char*) malloc(length);
-    if(!(pkt->PAYLOAD)){return 0;}
+    if(!(pkt->PAYLOAD)){
+        fprintf(stderr, "[pkt_set_payload] : %s\n", strerror(errno));
+        return 0;}
     memcpy(pkt->PAYLOAD, data, length);
     return PKT_OK;
 }
@@ -344,10 +346,10 @@ ssize_t varuint_decode(const uint8_t *data, const size_t len, uint16_t *retval)
 ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
 {
     if(len != 1 && len != 2){
-        fprintf(stderr, "[varuint_encode] Dimension %zu différente de {1, 2} byte(s)\n", len);
+        fprintf(stderr, "[varuint_encode] Dimension %zu différente de {1, 2} byte(s) \n", len);
         return -1;} // len != {1, 2} byte(s)
     if(val > MAX_15BITS){
-        fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits (L=1)\n", val);
+        fprintf(stderr, "[varuint_encode] Valeur %u trop grande pour être encodée sur 15 bits \n", val);
         return -1;} // Valeur trop grande pour etre encodee sur 15 bits
     uint8_t L = varuint_predict_len(val);
     if((uint16_t)len < (L+1)){
@@ -364,10 +366,6 @@ ssize_t varuint_encode(uint16_t val, uint8_t *data, const size_t len)
     }
     return L;
 }
-
-
-
-
 
 size_t varuint_len(const uint8_t *data)
 {

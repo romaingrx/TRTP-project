@@ -1,5 +1,6 @@
 C_MAIN     = src/main.c
-C_PRACTICE =  src/practice.c
+C_PRACTICE = src/practice.c
+C_TESTS    = tests/test.c
 C_PACKET   = src/packet.c
 H_PACKET   = src/packet.h
 C_RECEIVE  = src/receive.c
@@ -12,10 +13,12 @@ O_PRACTICE = practice.o
 O_PACKET   = packet.o
 O_QUEUE    = queue.o
 O_RECEIVE  = receive.o
+O_TESTS    = tests.o
 
-EXEC_PRACTICE = practice
+EXEC_PRACTICE = prac
 EXEC_RECEIVE  = receive
-EXEC_MAIN     = main
+EXEC_MAIN     = receiver
+EXEC_TESTS    = test
 
 ERR_FILE = src/stderr.txt
 VAR = "192.168.1.5 7903"
@@ -24,17 +27,33 @@ COMP = @gcc
 FLAGS = -lz -lm
 WFLAGS = -Werror -Wall
 
-default : $(EXEC_PRACTICE)
+
+
+tests : $(EXEC_TESTS)
+	@./$(EXEC_TESTS) $(VAR) 2> $(ERR_FILE)
+	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
+	@make o_clean
+
+practice : $(EXEC_PRACTICE)
 	@./$(EXEC_PRACTICE) $(VAR) 2> $(ERR_FILE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 	@make o_clean
 
+zip :
+	git log --stat > gitlog.stat
+	zip projet1_Delcoigne_Graux Makefile src/ tests/ Latex/rapport.pdf gitlog.stat
+
 clean : o_clean exec_clean
 
 o_clean :
-	@rm -f *.o *.out
+	rm -f *.o *.out
 exec_clean :
-	@rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE)
+	rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE)
+
+latex :
+	pdflatex Latex/rapport.tex
+	open Latex/rapport.pdf
+	@echo "prout"
 
 
 $(EXEC_MAIN) : $(O_MAIN) $(O_RECEIVE) $(O_PACKET) $(O_QUEUE)
@@ -42,6 +61,9 @@ $(EXEC_MAIN) : $(O_MAIN) $(O_RECEIVE) $(O_PACKET) $(O_QUEUE)
 
 $(EXEC_RECEIVE) : $(O_RECEIVE) $(O_QUEUE) $(O_PACKET)
 	$(COMP) -o $(EXEC_RECEIVE) $(O_RECEIVE) $(O_QUEUE) $(O_PACKET) $(FLAGS) $(WFLAGS)
+
+$(EXEC_TESTS) : $(O_TESTS) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE)
+	$(COMP) -o $(EXEC_TESTS) $(O_TESTS) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE) $(FLAGS) $(WFLAGS)
 
 $(EXEC_PRACTICE) : $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE)
 	$(COMP) -o $(EXEC_PRACTICE) $(O_PRACTICE) $(O_PACKET) $(O_QUEUE) $(O_RECEIVE) $(FLAGS) $(WFLAGS)
@@ -57,6 +79,9 @@ $(O_QUEUE) : $(C_QUEUE) $(H_QUEUE) $(H_PACKET)
 
 $(O_PACKET) : $(C_PACKET) $(H_PACKET)
 	$(COMP) -c $(C_PACKET) -o $(O_PACKET) $(WFLAGS)
+
+$(O_TESTS) : $(C_TESTS) $(H_PACKET) $(H_QUEUE) $(H_RECEIVE)
+	$(COMP) -c $(C_TESTS) -o $(O_TESTS) $(WFLAGS)
 
 $(O_PRACTICE) : $(C_PRACTICE) $(H_PACKET) $(H_QUEUE) $(H_RECEIVE)
 	$(COMP) -c $(C_PRACTICE) -o $(O_PRACTICE) $(WFLAGS)
