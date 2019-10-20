@@ -40,9 +40,6 @@ void test_decode_header(){
   pkt_del(pkt);
 }
 
-void test_decode_all(){
-
-}
 
 void test_pointer_struct(){
   pkt_t *pkt = pkt_new();
