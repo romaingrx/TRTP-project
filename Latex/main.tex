@@ -2,14 +2,54 @@
 \usepackage[utf8]{inputenc}
 
 \title{TRTP-Project}
-\author{�� Kouider Ben Naoum}
+\author{Kouider Ben Naoum}
 \date{September 2019}
 
 \begin{document}
 
 \maketitle
+%CONTENU A VOIR
+%- Comment maintenir l'état des connections concurrentes
+%- Quelle est notre technique pour traiter les connections concurrentes
+%- Comment avez-vous implémenté le principe de fenêtres de réception
+%- Quelle est votre statégie pour la génération des acquittements?
+
+%- Quelle est la partie critique de votre implémentation, affectant la vitesse de transfert.
+%- Comment géréz-vous la fermeture de connection?
+%- Quelles sont les performances de votre implémentation (Graphes)
+%- Quelles stragégies de tests avez-vous utilisées
+
+%- Test d'interopérabilité en annexe, ainsi que les changements faits au code.
+
 
 \section{Introduction}
-\section{Oui}
+%Il faut réintroduire le projet, rappelle-toi romain que nous offrons ce rapport à
+%une entreprise qui veut acheter notre solution.
+\section{Implémentation}
+\subsection{Selective repeat et fenêtre de connection}
+%Diamond girl je t’apprécie beaucoup, j’aimerais te prendre dans mes bras mais aussi tirer mon coup
+
+\subsection{Génération d'acquitements}
+%Y'a trop rien a dire, mais je vais en gros expliquer comment c'est que le gros zozo delcoigne a fait ça
+
+\subsection{Connections concurrentes}
+%Expliquer comment c'est qu'on fait (l'array de buffers dans queue), l'array de file descriptors, l'array de addrinfo
+
+\section{Evalutation}
+
+\subsection{Section critique (lente) du code}
+%Je ne sais même pas ce qui ralentit le code... Select? Et éventuellement l'ajout dans le buffer?
+%Ou bien le fait d'écrire dans le fichier si c'est pas un SSD.
+\subsection{Phase de tests}
+%On explique les tests qu'on a fait
+
+%Donc les encode decode tu dis comment tu as fait
+%Test des sockets
+%Test du selective repeat
+\subsection{Phase de benchmarking}
+%Chiffres et graphes sur la vitesse,... ?
+%Idées de graphes à mettre
+%- Evolution de la mémoire utilisée
+%- Performances?!
 
 \end{document}

@@ -269,11 +269,7 @@ void free_queue(){
   free(next);
   free(window_start);
   free(window_end);
-
-
-
   free(head);
-
 }
 void next_inc(int connection){
   if(next[connection] < pow(2,n_bits_encode_window)-1){
