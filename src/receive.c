@@ -21,7 +21,7 @@
 
 //Tuto qui nous a aidé: https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
 int print = 0;
-int iterator_file = 0, len_format = 0, max_connections; // max_connections == -1 si pas de limite
+int iterator_file = 0, len_format = 0; // max_connections == -1 si pas de limite
 char * format = NULL;
 bool MAX = true;
 
@@ -92,8 +92,9 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     }
   }
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
-  if ((!MAX) || (MAX && clients_known<max_connections)) {
+  if ((!MAX) || (MAX && clients_known<n_connections)) {
       clients_known++;
+      add_queue();
       if(new_client() == -1){
           fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
           return -1;
@@ -105,11 +106,13 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
 }
 
 int socket_listening(char* hostname, int port, int nombr, char * main_format){
-    init_queue(nombr);
-    max_connections = nombr;
+
+    n_connections = nombr;
     if(nombr == -1){
         MAX = false;
+        n_connections=1;
     }
+    init_queue(n_connections);
     format = main_format;
     len_format = strlen(format) + 4;
     clients_known = 1;

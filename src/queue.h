@@ -9,8 +9,9 @@
 extern int master_socket;
 extern struct sockaddr_in6* clients;
 extern int * file_descriptors;
-extern int clients_known;
+extern int clients_known; //Clients actuellement occupés de travailler
 extern int log_out;
+extern int n_connections; //Nombre maximal de connections
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);
