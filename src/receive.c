@@ -102,10 +102,10 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   return 0;
 }
 
-int socket_listening(char* hostname, int port, int n_connections, char * main_format){
-  init_queue(n_connections);
-    max_connections = n_connections;
-    if(n_connections == -1){
+int socket_listening(char* hostname, int port, int nombr, char * main_format){
+    init_queue(nombr);
+    max_connections = nombr;
+    if(nombr == -1){
         MAX = false;
     }
     format = main_format;

@@ -21,8 +21,8 @@ void test_pointer_struct();
 void write_packet(int seqnum, char * payload);
 
 int main(int argc, char const *argv[]) {
-  init_queue(1);
-  socket_listening(NULL, 8555, 5, "Coucou %d.txt");
+  socket_listening(NULL, 8555, 1, "Coucou %d.txt");
+
   return 0;
 }
 

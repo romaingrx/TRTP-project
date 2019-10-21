@@ -387,23 +387,25 @@ int data_req(pkt_t* pkt, int connection){
     }
   }
 
-  if(pkt->TR == 0 && pkt->TYPE == PTYPE_DATA && pkt->LENGTH == 0){
-    //If entering here, it means this packet was the very last one of the file.
-    //I must
-    //1/ End the file descriptor
-    //2/ Free this connection's buffer
-    //3/ Make sure queue has a free spot for any future connections
-    //4/ Clear the known address in the clients list
-    clients_known--;
-    close(file_descriptors[connection]);
-    free_buffer(connection);
-    define_connection(connection);
-    return 2;
 
-  }
 
 
   if(n == next[connection]){
+    if(pkt->TR == 0 && pkt->TYPE == PTYPE_DATA && pkt->LENGTH == 0){
+      //If entering here, it means this packet was the very last one of the file.
+      //I must
+      //1/ End the file descriptor
+      //2/ Free this connection's buffer
+      //3/ Make sure queue has a free spot for any future connections
+      //4/ Clear the known address in the clients list
+      pkt_del(pkt);
+      clients_known--;
+      close(file_descriptors[connection]);
+      free_buffer(connection);
+      define_connection(connection);
+      return 2;
+
+    }
     //If the packet is in sequence
     next_inc(connection);
     send_ack(pkt->SEQNUM, pkt->TIMESTAMP, connection, PTYPE_ACK);

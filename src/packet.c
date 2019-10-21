@@ -44,7 +44,6 @@ void pkt_del(pkt_t *pkt)
 {
     if(pkt != NULL){  //Vérifie que le packet est contenu en mémoire avant de le libérer
       if(pkt->PAYLOAD != NULL){ //Vérifie que la PAYLOAD est contenue en mémoire avant de la libérer
-          printf("DELETE PAYLOAT: %s\n",pkt->PAYLOAD );
           free(pkt->PAYLOAD);
       }
       free(pkt);
