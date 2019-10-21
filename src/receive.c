@@ -69,7 +69,8 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     file_descriptors = malloc(len_format);
     if(openFile()==-1){fprintf(stderr, "[treat_message_from] openfile: %s", strerror(errno));return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
-    printf("Added client 0\n");
+    if(log_out){
+    printf("Added client 0\n");}
   }
 
   for(int i = 0; i<clients_known; i++){
@@ -79,7 +80,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     inet_ntop(AF_INET6,&address.sin6_addr, adr2, INET6_ADDRSTRLEN);
     if(strcmp(adr1,adr2)==0){
       //Ici on a recu le message buffer du client indice i;
-      printf("Received message from client %d:::%s\n",  i, buffer);
+      if(log_out) printf("Received message from client %d:::%s\n",  i, buffer);
       if(treat_bytestream(buffer, 1024, i) ==2){
         //Treats bytestream. If it returns 2, this was the last message of the connection.
         //I can thus remove this client_known.
@@ -113,7 +114,7 @@ int socket_listening(char* hostname, int port, int nombr, char * main_format){
     clients_known = 1;
     int addrlen;
     char buffer[1024];
-    printf("Socket listening\n");
+    if(log_out){printf("Socket listening\n");}
 
 
   if (create_master_socket(&master_socket, hostname, port, &addrlen) == -1){
@@ -150,7 +151,7 @@ int socket_listening(char* hostname, int port, int nombr, char * main_format){
              fprintf(stderr, "[SOCKET LISTENING] recvfrom: %s\n", strerror(errno));
            }
            treat_message_from(newaddress, buffer, 1024);
-           printf("Received: %s\n", buffer);
+           if(log_out)           printf("Received: %s\n", buffer);
 
 
 
@@ -230,7 +231,7 @@ int openFile(){
     snprintf(filename, len_format, format, clients_known-1);
     int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0700);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
-    printf("Nouveau file descriptor : %d\n", filefd);
+    if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[clients_known-1] = filefd;
     return 0;
 }

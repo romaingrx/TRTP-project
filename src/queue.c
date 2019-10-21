@@ -8,7 +8,7 @@
 #include <unistd.h> // write, close
 #include <errno.h>
 
-int log_out = 1; //Makes the program log to stdout
+int log_out = 0; //Makes the program log to stdout
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -48,7 +48,7 @@ void data_ind(pkt_t *pkt, int connection){
   // if(log_out){
   //   char* payl = pkt_get_payload(pkt);
   // printf("Successfully recieved data%d : %s\n",pkt->SEQNUM, payl);}
-  printf("Write in the file \n");
+  if(log_out){printf("Write in the file \n");}
   write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
 }
@@ -290,17 +290,18 @@ void window_inc(int connection){
   if(window_end[connection] < pow(2,n_bits_encode_window)-1){ window_end[connection] ++;}
   else {    window_end[connection] = 0;}
   if(log_out){
+
   printf("[%d,%d]\n", window_start[connection], window_end[connection]);}
 }
 
 //Sends an ack packet with the given arguments to the socket associated to the given connecton number.
 void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
-  if(head[connection] != NULL){
-    if(head[connection]->data->SEQNUM ==  n+1){
-      return;
-    }
-  }
+  // if(head[connection] != NULL){
+  //   if(head[connection]->data->SEQNUM ==  n+1){
+  //     return;
+  //   }
+  // }
   //The little if head connection != null makes sure only the last ack is being sent when several
   //packets are stored in the buffer.
 
@@ -332,7 +333,6 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   if(  sendto(master_socket, donnees, len, 0,(struct sockaddr*)&theone, sizeof(struct sockaddr_in6)) == -1){
     fprintf(stderr, "[SEND ACK] error using sendto: %s \n", strerror(errno));
   }
-
 
   free(donnees);
 
@@ -379,9 +379,7 @@ int data_req(pkt_t* pkt, int connection){
   if(window_start[connection] > window_end[connection]){
     if(pkt->SEQNUM > window_start[connection] || pkt->SEQNUM < window_end[connection]){
       //Packet not inside window, ignore it
-      if(log_out){}
-
-      printf("Out of window packet 2 %d \n", pkt->SEQNUM);
+      if(log_out)printf("Out of window packet 2 %d \n", pkt->SEQNUM);
       pkt_del(pkt);
       return 0;
     }
