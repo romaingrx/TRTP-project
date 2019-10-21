@@ -8,7 +8,7 @@
 #include <unistd.h> // write, close
 #include <errno.h>
 
-int log_out = 0; //Makes the program log to stdout
+int log_out = 1; //Makes the program log to stdout
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -45,11 +45,10 @@ node_t** head;
 //Frees the packet afterwards
 void data_ind(pkt_t *pkt, int connection){
 
-  // if(log_out){
-  //   char* payl = pkt_get_payload(pkt);
-  // printf("Successfully recieved data%d : %s\n",pkt->SEQNUM, payl);}
-  if(log_out){printf("Write in the file \n");}
-  write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
+  if(log_out){
+  printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);}
+  // if(log_out){printf("Write in the file \n");}
+  // write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
 }
 //
@@ -135,8 +134,8 @@ int init_queue(int n){
 
 
 int add_queue(){
-  int oldn = n_connections;
-  n_connections++;
+  int oldn = clients_known;
+  clients_known++;
 
   int* err;
   err = (int*)realloc(windowsize, sizeof(int)*n_connections);

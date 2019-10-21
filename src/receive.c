@@ -66,6 +66,7 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
 
 int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients == NULL){
+    clients_known = 1;
     clients = malloc(sizeof(struct sockaddr_in6));
     file_descriptors = malloc(len_format);
     if(openFile()==-1){fprintf(stderr, "[treat_message_from] openfile: %s", strerror(errno));return -1;}
@@ -91,31 +92,31 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
       return 0;
     }
   }
+  if(log_out)printf("\n Did not find current IP in known clients list \n");
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
   if ((!MAX) || (MAX && clients_known<n_connections)) {
-      clients_known++;
-      add_queue();
+      add_queue(); //Add queue increases clients_known
       if(new_client() == -1){
           fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
           return -1;
       }
       // clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
       memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
+      treat_bytestream(buffer, 1024, clients_known-1);
   }
   return 0;
 }
 
-int socket_listening(char* hostname, int port, int nombr, char * main_format){
-
-    n_connections = nombr;
-    if(nombr == -1){
+int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format){
+    n_connections = nombremaxdeconnections;
+    if(n_connections == -1){ //Pas de maximum!
         MAX = false;
         n_connections=1;
-    }
+    }else MAX=true;
     init_queue(n_connections);
     format = main_format;
     len_format = strlen(format) + 4;
-    clients_known = 1;
+    clients_known = 0;
     int addrlen;
     char buffer[1024];
     if(log_out){printf("Socket listening\n");}
@@ -127,7 +128,7 @@ int socket_listening(char* hostname, int port, int nombr, char * main_format){
 
 
   //WHILE LOOP
-  while(clients_known > 0)
+  do
    {
 
       memset(&buffer, 0, 1024);
@@ -170,7 +171,7 @@ int socket_listening(char* hostname, int port, int nombr, char * main_format){
 
 
        }
- }
+ }while(clients_known > 0);
  free_receive();
  free_queue();
  closeFiles();
