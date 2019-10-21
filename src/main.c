@@ -23,7 +23,7 @@ void all_free(char * hostname,char * format){
 int main(int argc, char **argv)
 {
     char *hostname = NULL, *format = NULL;
-    int connections = -1, port;
+    int connections = 1, port;
 
     if (argc < 3) {
         printf("Need at least the hostname and the port.\n");
@@ -64,8 +64,6 @@ int main(int argc, char **argv)
     printf("HOSTNAME : %s\n", hostname);
     printf("PORT : %d\n", port);
     socket_listening(hostname, port, connections, format);
-    free_receive();
-    free_queue();
     all_free(hostname, format);
     return 0;
 }

@@ -23,8 +23,6 @@ void write_packet(int seqnum, char * payload);
 int main(int argc, char const *argv[]) {
   init_queue(1);
   socket_listening(NULL, 8555, 5, "Coucou %d.txt");
-  free_receive();
-  free_queue();
   return 0;
 }
 

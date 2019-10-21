@@ -44,6 +44,7 @@ void pkt_del(pkt_t *pkt)
 {
     if(pkt != NULL){  //Vérifie que le packet est contenu en mémoire avant de le libérer
       if(pkt->PAYLOAD != NULL){ //Vérifie que la PAYLOAD est contenue en mémoire avant de la libérer
+          printf("DELETE PAYLOAT: %s\n",pkt->PAYLOAD );
           free(pkt->PAYLOAD);
       }
       free(pkt);
@@ -114,25 +115,26 @@ pkt_status_code pkt_decode(char *data, const size_t len, pkt_t *pkt)
 
     uint16_t length = pkt_get_length(pkt);
 
-    char *PAYLOAD = malloc(length);
-    if(!PAYLOAD){return E_NOMEM;}
-    memcpy(PAYLOAD, (void*)&data[offset + 4], length);
-    status = pkt_set_payload(pkt, PAYLOAD, length);
-    if(status != PKT_OK){return status;}
+    if(length>0) {
+      char *PAYLOAD = malloc(length);
+      if(!PAYLOAD){return E_NOMEM;}
+      memcpy(PAYLOAD, (void*)&data[offset + 4], length);
+      status = pkt_set_payload(pkt, PAYLOAD, length);
+      if(status != PKT_OK){return status;}
 
-    memcpy(&CRC2, (void*)&data[offset + length + 4], 4);
-    CRC2 = ntohl(CRC2);
+      memcpy(&CRC2, (void*)&data[offset + length + 4], 4);
+      CRC2 = ntohl(CRC2);
 
-    CRC2_TESTER = crc32(0L, Z_NULL, 0);
-    CRC2_TESTER = crc32(CRC2_TESTER, (const Bytef *)(&data[offset + 4]), length);
-    if(CRC2 != CRC2_TESTER){return E_CRC;}
+      CRC2_TESTER = crc32(0L, Z_NULL, 0);
+      CRC2_TESTER = crc32(CRC2_TESTER, (const Bytef *)(&data[offset + 4]), length);
+      if(CRC2 != CRC2_TESTER){return E_CRC;}
 
-    status = pkt_set_crc2(pkt, CRC2);
-    if(status != PKT_OK){return status;}
-    offset += 4;
+      status = pkt_set_crc2(pkt, CRC2);
+      if(status != PKT_OK){return status;}
+      offset += 4;
 
 
-     free(PAYLOAD);
+     free(PAYLOAD);}
      //free(data); c'est pas un malloc couillon
      return PKT_OK;
 }
