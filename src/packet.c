@@ -4,9 +4,11 @@
 #include <string.h>
 #include <zlib.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <time.h>
 #include <math.h>
 #include <errno.h>
+#include <unistd.h>
 
 /* Extra #includes */
 /* Your code will be inserted here */

@@ -16,6 +16,7 @@
 #include <fcntl.h> // open
 #include <stdbool.h> // bool
 #include <arpa/inet.h>
+#include <sys/select.h>
 
 
 //Tuto qui nous a aidé: https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
@@ -174,32 +175,7 @@ int socket_listening(char* hostname, int port, int nombr, char * main_format){
 }
 
 
-int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6){
-    int status;
-    struct addrinfo hints, *ai;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family   = AF_INET6; // IPv6
-    hints.ai_socktype = 0; // Datagrams
-    hints.ai_protocol = IPPROTO_UDP; // UDP
-    hints.ai_flags    = 0; // Pas de spécificité
-    if ((status = getaddrinfo(hostname , NULL, &hints, &ai )) != 0) {
-        fprintf(stderr, "[IPV6] getaddrinfo: %s\n", gai_strerror(status));
-        return -1;
-    }
-    ipv6 = (struct sockaddr_in6 *)ai->ai_addr;
-    char *ipstr = malloc(INET6_ADDRSTRLEN);
 
-    void *addr;
-    addr = &(ipv6->sin6_addr);
-    char ipver = '6';
-    inet_ntop(ai->ai_family, addr, ipstr, sizeof ipstr);
-    printf(" IPv%c: %s\n", ipver, ipstr);
-
-    inet_pton(AF_INET6, ipstr, &(ipv6->sin6_addr));
-
-    freeaddrinfo(ai);
-    return 0;
-}
 
 int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
                 struct sockaddr_in6 *dest_addr, const int dest_port){

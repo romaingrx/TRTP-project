@@ -4,6 +4,8 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uintx_t */
 #include <stdio.h>  /* ssize_t */
+#include <sys/types.h>
+#include <unistd.h>
 
 /* Raccourci pour struct pkt */
 typedef struct pkt pkt_t;

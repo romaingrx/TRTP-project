@@ -9,6 +9,8 @@
 #include <time.h>
 #include <math.h>
 #include <errno.h>
+#include <getopt.h>
+#include <unistd.h>
 
 
 void err_malloc(char *text){
@@ -41,11 +43,11 @@ int main(int argc, char **argv)
                 format = malloc(sizeof(optarg));
                 if(format == NULL){err_malloc("FORMAT"); return EXIT_FAILURE;}
                 strcpy(format, optarg);
-                printf("FORMAT : %s\n", format);
+                //printf("FORMAT : %s\n", format);
                 break;
             case 'm':
                 connections = atoi(optarg);
-                printf("Connections : %d\n", connections);
+                //printf("Connections : %d\n", connections);
                 break;
         }
     }
@@ -61,8 +63,8 @@ int main(int argc, char **argv)
 
 
 
-    printf("HOSTNAME : %s\n", hostname);
-    printf("PORT : %d\n", port);
+    // printf("HOSTNAME : %s\n", hostname);
+    // printf("PORT : %d\n", port);
     socket_listening(hostname, port, connections, format);
     all_free(hostname, format);
     return 0;

@@ -25,9 +25,11 @@ VAR = "192.168.1.5 7903"
 
 COMP = @gcc
 FLAGS = -lz -lm
-WFLAGS = -Werror -Wall
+WFLAGS = -Werror -Wall -std=c99
 
 
+
+default : $(EXEC_MAIN)
 
 tests : $(EXEC_TESTS)
 	@./$(EXEC_TESTS) $(VAR) 2> $(ERR_FILE)
@@ -39,20 +41,22 @@ practice : $(EXEC_PRACTICE)
 	@if [ -f $(ERR_FILE) ]; then if [ -s $(ERR_FILE) ]; then open $(ERR_FILE); fi ; fi;
 	@make o_clean
 
-zip :
+zip : pdf
+	rm -f projet1_Delcoigne_Graux.zip
 	git log --stat > gitlog.stat
-	zip projet1_Delcoigne_Graux Makefile src/ tests/ Latex/rapport.pdf gitlog.stat
+	zip -r projet1_Delcoigne_Graux Makefile src/ tests/ rapport.pdf gitlog.stat
 
 clean : o_clean exec_clean
 
 o_clean :
-	rm -f *.o *.out
+	rm -f *.aux *.log *.pdf
+	rm -f *.o *.out gitlog.stat File*
 exec_clean :
 	rm -f $(EXEC_MAIN) $(EXEC_RECEIVE) $(EXEC_PRACTICE)
 
-latex :
+pdf :
 	pdflatex Latex/rapport.tex
-	open Latex/rapport.pdf
+	open rapport.pdf
 	@echo "prout"
 
 
