@@ -84,12 +84,13 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   }
   if(log_out)printf("\n Did not find current IP in known clients list \n");
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
-  if ((!MAX) || (MAX && clients_known<n_connections)) {
+  printf("n_connections: %d clients_known: %d\n", n_connections, clients_known);
+  if ((!MAX) || (MAX && clients_known<=n_connections)) {
       add_queue(); //Add queue increases clients_known
       clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
       memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
       treat_bytestream(buffer, 1024, clients_known-1);
-  }
+  }else{if(log_out)printf("This client has its maximum connections.\n");}
   return 0;
 }
 
@@ -99,7 +100,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
         MAX = false;
         n_connections=1;
     }else MAX=true;
-    init_queue(n_connections);
+    init_queue(1); //Initialise with 1
     format = main_format;
     len_format = strlen(format) + 4;
     clients_known = 0;
