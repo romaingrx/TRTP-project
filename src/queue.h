@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h> // write, close
+#include <stdbool.h>
 
 
 extern int master_socket;
@@ -12,6 +13,9 @@ extern int * file_descriptors;
 extern int clients_known; //Clients actuellement occupés de travailler
 extern int log_out;
 extern int n_connections; //Nombre maximal de connections
+extern bool MAX;
+extern char * format;
+extern int len_format;
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);
@@ -101,3 +105,18 @@ void next_inc(int connection);
 //Si t'as lu cette ligne de commentaire je te chatouillerai
 //le pied gauche hihi
 void window_inc(int connection);
+
+/*
+ * Crée un file descriptor pour le fichier de sortie et le stock dans une
+ * variable globale à l'indice correspondant au client.
+ * @return : -1 si une erreur survient
+ *           sinon 0
+ */
+int openFile();
+
+/*
+ * Ferme le file descriptor correspondant à l'indice du client.
+ * @return : -1 si une erreur survient
+ *           sinon 0
+ */
+int closeFiles();

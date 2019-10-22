@@ -26,20 +26,6 @@ int IPV6_translater(const char* hostname, struct sockaddr_in6 *ipv6);
 
 
 
-/*
- * Crée un file descriptor pour le fichier de sortie et le stock dans une
- * variable globale à l'indice correspondant au client.
- * @return : -1 si une erreur survient
- *           sinon 0
- */
-int openFile();
-
-/*
- * Ferme le file descriptor correspondant à l'indice du client.
- * @return : -1 si une erreur survient
- *           sinon 0
- */
-int closeFiles();
 
 /*
  * Écrit dans le fichier correspondant à l'indice du client
