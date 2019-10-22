@@ -349,6 +349,7 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   }
 }
 int rearange_tabs(int connection){
+     printf("COUCOU\n\n\n");
     if(clients_known > 1){
         for (size_t i = connection; i < clients_known-1; i++) {
             //file_descriptors[i] = file_descriptors[i+1];
@@ -359,6 +360,7 @@ int rearange_tabs(int connection){
             window_start[i] = window_start[i+1];
             window_end[i] = window_end[i+1];
             head[i] = head[i+1];
+	    clients[i] = clients[i+1];
         }
         if ((realloc(windowsize, clients_known-1)==NULL) ||
             //(realloc(file_descriptors, clients_known-1)==NULL) ||
@@ -367,7 +369,8 @@ int rearange_tabs(int connection){
             (realloc(next, clients_known-1)==NULL) ||
             (realloc(window_start, clients_known-1)==NULL) ||
             (realloc(window_end, clients_known-1)==NULL) ||
-            (realloc(head, clients_known-1)==NULL)) {
+            (realloc(head, clients_known-1)==NULL)|| 
+	    (realloc(clients, clients_known-1)==NULL)) {
                 fprintf(stderr, "[rearange_tabs] %s\n", strerror(errno));
                 return -1;
         }
@@ -379,6 +382,7 @@ int rearange_tabs(int connection){
         free(window_start);
         free(window_end);
         free(head);
+	free(clients);
         //free(file_descriptors);
         init_queue(1);
 
