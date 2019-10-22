@@ -348,7 +348,44 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
     window_inc(connection);
   }
 }
+int rearange_tabs(int connection){
+    if(clients_known > 1){
+        for (size_t i = connection; i < clients_known-1; i++) {
+            //file_descriptors[i] = file_descriptors[i+1];
+            windowsize[i] = windowsize[i+1];
+            lastackn[i] = lastackn[i+1];
+            lastackt[i] = lastackt[i+1];
+            next[i] = next[i+1];
+            window_start[i] = window_start[i+1];
+            window_end[i] = window_end[i+1];
+            head[i] = head[i+1];
+        }
+        if ((realloc(windowsize, clients_known-1)==NULL) ||
+            //(realloc(file_descriptors, clients_known-1)==NULL) ||
+            (realloc(lastackn, clients_known-1)==NULL) ||
+            (realloc(lastackt, clients_known-1)==NULL) ||
+            (realloc(next, clients_known-1)==NULL) ||
+            (realloc(window_start, clients_known-1)==NULL) ||
+            (realloc(window_end, clients_known-1)==NULL) ||
+            (realloc(head, clients_known-1)==NULL)) {
+                fprintf(stderr, "[rearange_tabs] %s\n", strerror(errno));
+                return -1;
+        }
+    }else{
+        free(windowsize);
+        free(lastackn);
+        free(lastackt);
+        free(next);
+        free(window_start);
+        free(window_end);
+        free(head);
+        //free(file_descriptors);
+        init_queue(1);
 
+    }
+    clients_known--;
+    return 0;
+}
 
 
 
@@ -399,9 +436,7 @@ int data_req(pkt_t* pkt, int connection){
       //3/ Make sure queue has a free spot for any future connections
       //4/ Clear the known address in the clients list
       pkt_del(pkt);
-      clients_known--;
-      free_buffer(connection);
-      define_connection(connection);
+      rearange_tabs(connection);
       return 2;
 
     }
@@ -475,44 +510,5 @@ int closeFiles(){
     for (size_t i = 0; i < clients_known; i++) {
             close(file_descriptors[i]);
     }
-    return 0;
-}
-
-int rearange_tabs(int connection){
-    if(clients_known > 1){
-        for (size_t i = connection; i < clients_known-1; i++) {
-            //file_descriptors[i] = file_descriptors[i+1];
-            windowsize[i] = windowsize[i+1];
-            lastackn[i] = lastackn[i+1];
-            lastackt[i] = lastackt[i+1];
-            next[i] = next[i+1];
-            window_start[i] = window_start[i+1];
-            window_end[i] = window_end[i+1];
-            head[i] = head[i+1];
-        }
-        if ((realloc(windowsize, clients_known-1)==NULL) ||
-            //(realloc(file_descriptors, clients_known-1)==NULL) ||
-            (realloc(lastackn, clients_known-1)==NULL) ||
-            (realloc(lastackt, clients_known-1)==NULL) ||
-            (realloc(next, clients_known-1)==NULL) ||
-            (realloc(window_start, clients_known-1)==NULL) ||
-            (realloc(window_end, clients_known-1)==NULL) ||
-            (realloc(head, clients_known-1)==NULL)) {
-                fprintf(stderr, "[rearange_tabs] %s\n", strerror(errno));
-                return -1;
-        }
-    }else{
-        free(windowsize);
-        free(lastackn);
-        free(lastackt);
-        free(next);
-        free(window_start);
-        free(window_end);
-        free(head);
-        //free(file_descriptors);
-        init_queue(1);
-
-    }
-    clients_known--;
     return 0;
 }

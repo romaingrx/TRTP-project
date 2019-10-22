@@ -156,7 +156,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
            //     printf("Send error: %s\n",strerror(errno));
            // }
 
-
+           printf("Clients known: %d \n", clients_known);
        }
  }while(clients_known > 0);
  free_receive();
