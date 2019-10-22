@@ -113,7 +113,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
       fprintf(stderr, "Create master socket failed: %s\n", strerror(errno));
       return -1;}
 
-
+  struct timeval tv = {20, 0}; //Timeout
   //WHILE LOOP
   do
    {
@@ -125,8 +125,8 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
        FD_SET(master_socket, &readfds);
        int max_sd = master_socket;
 
-       int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
-
+       int activity = select( max_sd + 1 , &readfds , NULL , NULL , &tv);
+       if(activity == 0 && clients_known==0)break;
        if ((activity < 0) && (errno!=EINTR))
        {
            printf("select error");
@@ -158,7 +158,8 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
 
            printf("Clients known: %d \n", clients_known);
        }
- }while(clients_known > 0);
+ }while(1);
+ if(log_out)printf("Timeout, ending program\n");
  free_receive();
  free_queue();
  closeFiles();
