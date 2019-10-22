@@ -17,10 +17,6 @@ void err_malloc(char *text){
     fprintf(stderr, "[main] Pas réussi à allouer de la mémoire pour %s.\n", text);
 }
 
-void all_free(char * hostname,char * format){
-    if(hostname != NULL){free(hostname);}
-    //if(format != NULL){free(format);}
-}
 
 int main(int argc, char **argv)
 {
@@ -40,9 +36,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "[main] Le serveur ne prend pas -f comme argument.\n");
                 break;
             case 'o':
-                format = malloc(sizeof(optarg));
-                if(format == NULL){err_malloc("FORMAT"); return EXIT_FAILURE;}
-                strcpy(format, optarg);
+                format = optarg;
 
                 //printf("FORMAT : %s\n", format);
                 break;
@@ -53,14 +47,10 @@ int main(int argc, char **argv)
         }
     }
     if(format == NULL){
-        //format = malloc(sizeof(char)*11);
-        //strcpy(format, "File %d.txt");
         format = "File %d.txt";
     }
 
-    hostname = malloc(sizeof(argv[optind]));
-    if(hostname == NULL){err_malloc("HOSTNAME"); return EXIT_FAILURE;}
-    strcpy(hostname, argv[optind]);
+    hostname = argv[optind];
     port = (int)atoi(argv[optind+1]);
 
 
@@ -68,6 +58,5 @@ int main(int argc, char **argv)
     // printf("HOSTNAME : %s\n", hostname);
     // printf("PORT : %d\n", port);
     socket_listening(hostname, port, connections, format);
-    all_free(hostname, format);
     return 0;
 }
