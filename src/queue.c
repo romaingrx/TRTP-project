@@ -394,7 +394,6 @@ int data_req(pkt_t* pkt, int connection){
       //4/ Clear the known address in the clients list
       pkt_del(pkt);
       clients_known--;
-      close(file_descriptors[connection]);
       free_buffer(connection);
       define_connection(connection);
       return 2;
