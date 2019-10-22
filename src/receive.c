@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> // write, close
 // #include <sys/types.h>
 // #include <sys/stat.h>
 #include <string.h> // memset
@@ -21,9 +20,7 @@
 
 //Tuto qui nous a aidé: https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
 int print = 0;
-int iterator_file = 0, len_format = 0; // max_connections == -1 si pas de limite
-char * format = NULL;
-bool MAX = true;
+int iterator_file = 0; // max_connections == -1 si pas de limite
 
 
 
@@ -36,7 +33,7 @@ fd_set readfds;
 
 
 void free_receive(){
-    //if(file_descriptors != NULL){free(file_descriptors);}
+    if(file_descriptors != NULL){free(file_descriptors);}
     if(clients != NULL){free(clients);}
 }
 
@@ -195,23 +192,6 @@ int socket_init(struct sockaddr_in6 *src_addr, const int src_port,
 
 
 
-
-int openFile(){
-    char filename[len_format];
-    snprintf(filename, len_format, format, clients_known-1);
-    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0700);
-    if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
-    if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
-    file_descriptors[clients_known-1] = filefd;
-    return 0;
-}
-
-int closeFiles(){
-    for (size_t i = 0; i < clients_known; i++) {
-            close(file_descriptors[i]);
-    }
-    return 0;
-}
 
 // int writeFile(const int connection, const char * buf, size_t len){
 //     return write(file_descriptors[connection], buf, len);

@@ -7,6 +7,9 @@
 #include <netinet/in.h> // sockaddr_in6
 #include <unistd.h> // write, close
 #include <errno.h>
+#include <unistd.h>//read()
+#include <fcntl.h>
+#include <stdbool.h>
 
 int log_out = 1; //Makes the program log to stdout
 
@@ -17,6 +20,9 @@ int * file_descriptors = NULL; //Stores the file descriptors for the known clien
 int clients_known; //Number of clients CURRENTLY known
 int n_bits_encode_window = 8; //should remain constant
 int n_connections = -1; //Number of maximal connections (given as argument to main.)
+char * format = NULL;
+bool MAX = true;
+int len_format = 0;
 
 int get_nconnections(){
   return n_connections;
@@ -454,7 +460,22 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   return data_req(packet, connection);
 }
 
+int openFile(){
+    char filename[len_format];
+    snprintf(filename, len_format, format, clients_known-1);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0700);
+    if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
+    if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
+    file_descriptors[clients_known-1] = filefd;
+    return 0;
+}
 
+int closeFiles(){
+    for (size_t i = 0; i < clients_known; i++) {
+            close(file_descriptors[i]);
+    }
+    return 0;
+}
 
 //
 // int main(int argc, char const *argv[]) {
