@@ -100,8 +100,8 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
         MAX = false;
         n_connections=1;
     }else MAX=true;
-    init_queue(1); //Initialise with 1
     format = main_format;
+    init_queue(1); //Initialise with 1
     len_format = strlen(format) + 4;
     clients_known = 0;
     int addrlen;

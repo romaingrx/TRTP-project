@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include "packet.h"
+#include "queue.h"
 #include <sys/socket.h>
 #include <netinet/in.h> // sockaddr_in6
 #include <unistd.h> // write, close
@@ -54,6 +55,10 @@ void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
   printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);}
+  printf("PAYLOAD %s\n", pkt_get_payload(pkt));
+  if(write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt)) == -1){
+      fprintf(stderr, "[data_ind] : %s\n", strerror(errno));
+  }
   pkt_del(pkt);
 }
 
@@ -64,7 +69,7 @@ void data_ind(pkt_t *pkt, int connection){
 
 //This function initialises a connection and all its variables
 int define_connection(int con_indice){
-  int window_size = 2; //default
+  int window_size = 16; //default
   windowsize[con_indice] = window_size;
   lastackn[con_indice]=-1;
   lastackt[con_indice]=0;
@@ -77,7 +82,6 @@ int define_connection(int con_indice){
 
 //This function initialises a queue (malloc's the array of varaible. HAS TO BE CALLED at the start of program)
 int init_queue(int n){
-
   int* err;
   err = (int*)malloc(sizeof(int)*n);
   if(err==NULL){
@@ -123,7 +127,17 @@ int init_queue(int n){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
+
+  file_descriptors = (int*)malloc(sizeof(int)*n);
+  if(file_descriptors==NULL){
+    fprintf(stderr,"[queue_init] : %s", strerror(errno));
+    return(-1);
+  }
+
+  // printf("DATA DATA DATA %d\n", file_descriptors[0]);
+
   for(int i=0; i<n; i++){
+    if(openFile(0) == -1){return -1;}
     windowsize[i]=4; //Should be changed by program
     lastackn[i]=-1;
     lastackt[i]=0;
@@ -141,39 +155,39 @@ int add_queue(){
   clients_known++;
 
   int* err;
-  err = (int*)realloc(windowsize, sizeof(int)*n_connections);
+  err = (int*)realloc(windowsize, sizeof(int)*clients_known);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   windowsize = err;
 
-  lastackn= (uint8_t*)realloc(lastackn, sizeof(uint8_t)*n_connections);
+  lastackn= (uint8_t*)realloc(lastackn, sizeof(uint8_t)*clients_known);
   if(lastackn==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
-  lastackt= (uint32_t*)realloc(lastackt, sizeof(uint32_t)*n_connections);
+  lastackt= (uint32_t*)realloc(lastackt, sizeof(uint32_t)*clients_known);
   if(lastackt==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
-  err = (int*)realloc(next, sizeof(int)*n_connections);
+  err = (int*)realloc(next, sizeof(int)*clients_known);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   next = err;
 
-  err = (int*)realloc(window_start, sizeof(int)*n_connections);
+  err = (int*)realloc(window_start, sizeof(int)*clients_known);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   window_start = err;
 
-  err = (int*)realloc(window_end, sizeof(int)*n_connections);
+  err = (int*)realloc(window_end, sizeof(int)*clients_known);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
@@ -182,12 +196,21 @@ int add_queue(){
   window_end = err;
 
 
-  head = (node_t**)realloc(head, sizeof(node_t*)*n_connections);
+  head = (node_t**)realloc(head, sizeof(node_t*)*clients_known);
   if(head==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
-  int i = oldn;
+
+  file_descriptors = (int*)realloc(file_descriptors, sizeof(int)*clients_known);
+  if(file_descriptors==NULL){
+    fprintf(stderr,"[add_queue] : %s", strerror(errno));
+    return(-1);
+  }
+
+
+    int i = oldn;
+    if(openFile(i) == -1){return -1;}
     windowsize[i]=4; //Should be changed by program
     lastackn[i]=-1;
     lastackt[i]=0;
@@ -299,11 +322,11 @@ void window_inc(int connection){
 //Sends an ack packet with the given arguments to the socket associated to the given connecton number.
 void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
-  // if(head[connection] != NULL){
-  //   if(head[connection]->data->SEQNUM ==  n+1){
-  //     return;
-  //   }
-  // }
+  if(head[connection] != NULL){
+    if(head[connection]->data->SEQNUM ==  n+1){
+      return;
+    }
+  }
   //The little if head connection != null makes sure only the last ack is being sent when several
   //packets are stored in the buffer.
 
@@ -349,6 +372,9 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   }
 }
 int rearange_tabs(int connection){
+    if(close(file_descriptors[connection]) == -1){
+        fprintf(stderr, "[rearange_tabs] : %s\n", strerror(errno));
+    }
     if(clients_known > 1){
         for (size_t i = connection; i < clients_known-1; i++) {
             //file_descriptors[i] = file_descriptors[i+1];
@@ -401,10 +427,10 @@ int data_req(pkt_t* pkt, int connection){
     send_ack(pkt->SEQNUM, pkt->TIMESTAMP,connection, PTYPE_NACK);
   }
   //If variable window size
-  if(pkt->WINDOW != windowsize[connection]){
-    window_end[connection] = window_start[connection]+pkt->WINDOW -1;
-    windowsize[connection] = pkt->WINDOW;
-  }
+  // if(pkt->WINDOW != windowsize[connection]){
+  //   window_end[connection] = window_start[connection]+pkt->WINDOW -1;
+  //   windowsize[connection] = pkt->WINDOW;
+  // }
 
 
   //Checking if packet is in the receiving window.
@@ -438,6 +464,7 @@ int data_req(pkt_t* pkt, int connection){
       //2/ Free this connection's buffer
       //3/ Make sure queue has a free spot for any future connections
       //4/ Clear the known address in the clients list
+      send_ack(pkt_get_seqnum(pkt), pkt_get_timestamp(pkt), connection, PTYPE_ACK);
       pkt_del(pkt);
       rearange_tabs(connection);
       return 2;
@@ -498,13 +525,13 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   return data_req(packet, connection);
 }
 
-int openFile(){
+int openFile(int i){
     char filename[len_format];
-    snprintf(filename, len_format, format, nb_file);
-    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0700);
-    if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
+    sprintf(filename, format, nb_file);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
+    if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); exit(EXIT_FAILURE);}
     if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
-    file_descriptors[clients_known-1] = filefd;
+    file_descriptors[i] = filefd;
     nb_file ++;
     return 0;
 }

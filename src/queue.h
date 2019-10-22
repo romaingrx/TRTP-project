@@ -113,7 +113,7 @@ void window_inc(int connection);
  * @return : -1 si une erreur survient
  *           sinon 0
  */
-int openFile();
+int openFile(int i);
 
 /*
  * Ferme le file descriptor correspondant à l'indice du client.
