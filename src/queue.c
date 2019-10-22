@@ -47,11 +47,8 @@ void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
   printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);}
-  // if(log_out){printf("Write in the file \n");}
-  // write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt));
   pkt_del(pkt);
 }
-//
 
 
 

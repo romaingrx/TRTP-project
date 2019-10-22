@@ -34,14 +34,9 @@ bool MAX = true;
 
 fd_set readfds;
 
-int new_client(){
-    if(realloc(file_descriptors, len_format * clients_known) == NULL){fprintf(stderr, "[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
-    if(realloc(clients, sizeof(struct sockaddr_in6)*clients_known) == NULL){fprintf(stderr, "[NEW_CLIENT] malloc: %s", strerror(errno));return -1;}
-    return openFile();
-}
 
 void free_receive(){
-    if(file_descriptors != NULL){free(file_descriptors);}
+    //if(file_descriptors != NULL){free(file_descriptors);}
     if(clients != NULL){free(clients);}
 }
 
@@ -68,8 +63,6 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients == NULL){
     clients_known = 1;
     clients = malloc(sizeof(struct sockaddr_in6));
-    file_descriptors = malloc(len_format);
-    if(openFile()==-1){fprintf(stderr, "[treat_message_from] openfile: %s", strerror(errno));return -1;}
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     if(log_out){
     printf("Added client 0\n");}
@@ -96,11 +89,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
   if ((!MAX) || (MAX && clients_known<n_connections)) {
       add_queue(); //Add queue increases clients_known
-      if(new_client() == -1){
-          fprintf(stderr, "[treat_message_from] : %s\n", strerror(errno));
-          return -1;
-      }
-      // clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
+      clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
       memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
       treat_bytestream(buffer, 1024, clients_known-1);
   }
