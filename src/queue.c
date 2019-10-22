@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-int log_out = 1; //Makes the program log to stdout
+int log_out = 0; //Makes the program log to stdout
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -54,8 +54,8 @@ node_t** head;
 void data_ind(pkt_t *pkt, int connection){
 
   if(log_out){
-  printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);}
-  printf("PAYLOAD %s\n", pkt_get_payload(pkt));
+  printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);
+  printf("PAYLOAD %s\n", pkt_get_payload(pkt));}
   if(write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt)) == -1){
       fprintf(stderr, "[data_ind] : %s\n", strerror(errno));
   }
