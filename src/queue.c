@@ -528,7 +528,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
 int openFile(int i){
     char filename[len_format];
     sprintf(filename, format, nb_file);
-    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0777);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); exit(EXIT_FAILURE);}
     if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[i] = filefd;
