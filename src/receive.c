@@ -88,7 +88,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(log_out)printf("\n Did not find current IP in known clients list \n");
   //On a pas trouvé dans le tableau, il faut rajouter du coup.
   printf("n_connections: %d clients_known: %d\n", n_connections, clients_known);
-  if ((!MAX) || (MAX && clients_known<=n_connections)) {
+  if ((!MAX) || (MAX && clients_known<n_connections)) {
       add_queue(); //Add queue increases clients_known
       clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
       memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
