@@ -57,7 +57,7 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
 
 
 int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
-  if(clients == NULL){
+  if(clients_known ==0){
     clients_known = 1;
     clients = malloc(sizeof(struct sockaddr_in6));
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
