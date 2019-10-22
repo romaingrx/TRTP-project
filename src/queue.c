@@ -23,6 +23,7 @@ int n_connections = -1; //Number of maximal connections (given as argument to ma
 char * format = NULL;
 bool MAX = true;
 int len_format = 0;
+int nb_file = 0;
 
 int get_nconnections(){
   return n_connections;
@@ -76,49 +77,48 @@ int define_connection(int con_indice){
 
 //This function initialises a queue (malloc's the array of varaible. HAS TO BE CALLED at the start of program)
 int init_queue(int n){
-  n_connections  = n;
 
   int* err;
-  err = (int*)malloc(sizeof(int)*n_connections);
+  err = (int*)malloc(sizeof(int)*n);
   if(err==NULL){
     fprintf(stderr,"[init_queue] malloc erreur");
     return(-1);
   }
   windowsize = err;
 
-  lastackn = (uint8_t*)malloc(sizeof(uint8_t)*n_connections);
+  lastackn = (uint8_t*)malloc(sizeof(uint8_t)*n);
   if(lastackn==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
-  lastackt = (uint32_t*)malloc(sizeof(uint32_t)*n_connections);
+  lastackt = (uint32_t*)malloc(sizeof(uint32_t)*n);
   if(lastackt==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
-  err = (int*)malloc(sizeof(int)*n_connections);
+  err = (int*)malloc(sizeof(int)*n);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   next = err;
 
-  err = (int*)malloc(sizeof(int)*n_connections);
+  err = (int*)malloc(sizeof(int)*n);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
   window_start = err;
 
-  err = (int*)malloc(sizeof(int)*n_connections);
+  err = (int*)malloc(sizeof(int)*n);
   if(err==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
   }
 
   window_end = err;
-  head = (node_t**)malloc(sizeof(node_t*)*n_connections);
+  head = (node_t**)malloc(sizeof(node_t*)*n);
   if(head==NULL){
     fprintf(stderr,"init_queue malloc erreur");
     return(-1);
@@ -462,11 +462,12 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
 
 int openFile(){
     char filename[len_format];
-    snprintf(filename, len_format, format, clients_known-1);
+    snprintf(filename, len_format, format, nb_file);
     int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0700);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); return -1;}
     if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[clients_known-1] = filefd;
+    nb_file ++;
     return 0;
 }
 
@@ -477,20 +478,41 @@ int closeFiles(){
     return 0;
 }
 
-//
-// int main(int argc, char const *argv[]) {
-//   init_queue(1);
-//   define_connection(0, 4);
-//
-//   pkt_t *pkt0 = pkt_new(0, 1);
-//   pkt_t *pkt1 = pkt_new(2, 1);
-//   pkt_t *pkt2 = pkt_new(2, 1);
-//   data_req(pkt0,0);
-//   data_req(pkt1,0);
-//   data_req(pkt2,0);
-//
-//   free_queue();
-//
-//
-//   return 0;
-// }
+int rearange_tabs(int connection){
+    if(clients_known > 1){
+        for (size_t i = connection; i < clients_known-1; i++) {
+            //file_descriptors[i] = file_descriptors[i+1];
+            windowsize[i] = windowsize[i+1];
+            lastackn[i] = lastackn[i+1];
+            lastackt[i] = lastackt[i+1];
+            next[i] = next[i+1];
+            window_start[i] = window_start[i+1];
+            window_end[i] = window_end[i+1];
+            head[i] = head[i+1];
+        }
+        if ((realloc(windowsize, clients_known-1)==NULL) ||
+            //(realloc(file_descriptors, clients_known-1)==NULL) ||
+            (realloc(lastackn, clients_known-1)==NULL) ||
+            (realloc(lastackt, clients_known-1)==NULL) ||
+            (realloc(next, clients_known-1)==NULL) ||
+            (realloc(window_start, clients_known-1)==NULL) ||
+            (realloc(window_end, clients_known-1)==NULL) ||
+            (realloc(head, clients_known-1)==NULL)) {
+                fprintf(stderr, "[rearange_tabs] %s\n", strerror(errno));
+                return -1;
+        }
+    }else{
+        free(windowsize);
+        free(lastackn);
+        free(lastackt);
+        free(next);
+        free(window_start);
+        free(window_end);
+        free(head);
+        //free(file_descriptors);
+        init_queue(1);
+
+    }
+    clients_known--;
+    return 0;
+}

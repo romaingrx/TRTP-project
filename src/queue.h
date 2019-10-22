@@ -16,6 +16,7 @@ extern int n_connections; //Nombre maximal de connections
 extern bool MAX;
 extern char * format;
 extern int len_format;
+extern int nb_file;
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);
@@ -120,3 +121,9 @@ int openFile();
  *           sinon 0
  */
 int closeFiles();
+
+/*
+ * Réarrange tous les tableaux.
+ * @return : 0
+ */
+int rearange_tabs(int connection);
