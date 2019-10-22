@@ -92,7 +92,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
       clients = realloc(clients, sizeof(struct sockaddr_in6)*clients_known);
       memcpy(&clients[clients_known-1], &address, sizeof(struct sockaddr_in6));
       treat_bytestream(buffer, 1024, clients_known-1);
-  }
+  }else{if(log_out)printf("This client has its maximum connections.\n");}
   return 0;
 }
 
@@ -102,7 +102,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
         MAX = false;
         n_connections=1;
     }else MAX=true;
-    init_queue(n_connections);
+    init_queue(1); //Initialise with 1
     format = main_format;
     len_format = strlen(format) + 4;
     clients_known = 0;
