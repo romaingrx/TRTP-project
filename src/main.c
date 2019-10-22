@@ -19,7 +19,7 @@ void err_malloc(char *text){
 
 void all_free(char * hostname,char * format){
     if(hostname != NULL){free(hostname);}
-    if(format != NULL){free(format);}
+    //if(format != NULL){free(format);}
 }
 
 int main(int argc, char **argv)
@@ -43,6 +43,7 @@ int main(int argc, char **argv)
                 format = malloc(sizeof(optarg));
                 if(format == NULL){err_malloc("FORMAT"); return EXIT_FAILURE;}
                 strcpy(format, optarg);
+
                 //printf("FORMAT : %s\n", format);
                 break;
             case 'm':
@@ -52,8 +53,9 @@ int main(int argc, char **argv)
         }
     }
     if(format == NULL){
-        format = malloc(sizeof(char)*11);
-        strcpy(format, "File %d.txt");
+        //format = malloc(sizeof(char)*11);
+        //strcpy(format, "File %d.txt");
+        format = "File %d.txt";
     }
 
     hostname = malloc(sizeof(argv[optind]));

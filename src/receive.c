@@ -34,7 +34,7 @@ fd_set readfds;
 
 void free_receive(){
     if(file_descriptors != NULL){free(file_descriptors);}
-    if(clients != NULL){free(clients);}
+    //if(clients != NULL){free(clients);} plus nécessaire vu que rearrange_tabs le fait
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
