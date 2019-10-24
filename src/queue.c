@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-int log_out = 0; //Makes the program log to stdout
+int log_out = 1; //Makes the program log to stdout
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -58,8 +58,8 @@ void data_ind(pkt_t *pkt, int connection){
   }
 
   if(log_out){
-  printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);
-  printf("PAYLOAD %s\n", pkt_get_payload(pkt));}
+  printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);}
+  // printf("PAYLOAD %s\n", pkt_get_payload(pkt));}
   if(write(file_descriptors[connection], pkt_get_payload(pkt), pkt_get_length(pkt)) == -1){
       fprintf(stderr, "[data_ind] : %s\n", strerror(errno));
   }
@@ -328,6 +328,13 @@ void window_inc(int connection){
 //Sends an ack packet with the given arguments to the socket associated to the given connecton number.
 void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
+  if(window_start[connection] == n){
+    window_inc(connection);
+  }
+  lastackn[connection] = n;
+  lastackt[connection] = temps;
+
+
   if(head[connection] != NULL){
     if(head[connection]->data->SEQNUM ==  n+1){
       return;
@@ -341,8 +348,13 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
   uint8_t toack = 0;
   if(n != 255){toack = n+1;}
 
-  if(log_out){
-  printf("ACK %d\n", toack);}
+  if(log_out)
+  {
+    if(type  == PTYPE_ACK)  printf("ACK %d timestamp: %u\n", toack,temps);
+    if(type == PTYPE_NACK)  printf("NCK %d timestamp: %u\n", toack,temps);
+  }
+
+
 
   //Gere i'm generatine a packet which I'll send via sockets.
   pkt_t* ackpacket = pkt_new();
@@ -369,13 +381,10 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
 
 
-  lastackn[connection] = n;
-  lastackt[connection] = temps;
 
 
-  if(window_start[connection] == n){
-    window_inc(connection);
-  }
+
+
 }
 int rearange_tabs(int connection){
     if(close(file_descriptors[connection]) == -1){
@@ -470,6 +479,7 @@ int data_req(pkt_t* pkt, int connection){
       //2/ Free this connection's buffer
       //3/ Make sure queue has a free spot for any future connections
       //4/ Clear the known address in the clients list
+      if(log_out)printf("\n\nGot last packet on connection %d\n",connection);
       send_ack(pkt_get_seqnum(pkt), pkt_get_timestamp(pkt), connection, PTYPE_ACK);
       pkt_del(pkt);
       rearange_tabs(connection);
@@ -523,7 +533,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
   if(status != PKT_OK){
         send_ack(lastackn[connection],lastackt[connection] ,connection, PTYPE_ACK);
         if(log_out){
-        printf("Packet invalid: %d\n",status);}
+        printf("Packet number %d invalid: %d\n",packet->SEQNUM,status);}
         return status;
   }
 

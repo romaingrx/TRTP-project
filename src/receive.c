@@ -72,7 +72,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     inet_ntop(AF_INET6,&address.sin6_addr, adr2, INET6_ADDRSTRLEN);
     if(strcmp(adr1,adr2)==0){
       //Ici on a recu le message buffer du client indice i;
-      if(log_out) printf("Received message from client %d:::%s\n",  i, buffer);
+      // if(log_out) printf("Received message from client %d:::%s\n",  i, buffer);
       if(treat_bytestream(buffer, 1024, i) ==2){
         //Treats bytestream. If it returns 2, this was the last message of the connection.
         //I can thus remove this client_known.
@@ -127,6 +127,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
 
        int activity = select( max_sd + 1 , &readfds , NULL , NULL , &tv);
        if(activity == 0 && clients_known==0)break;
+       //if(activity == 0)break;
        if ((activity < 0) && (errno!=EINTR))
        {
            printf("select error");
@@ -143,7 +144,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
              fprintf(stderr, "[SOCKET LISTENING] recvfrom: %s\n", strerror(errno));
            }
            treat_message_from(newaddress, buffer, 1024);
-           if(log_out)           printf("Received: %s\n", buffer);
+           // if(log_out)           printf("Received: %s\n", buffer);
 
 
 
