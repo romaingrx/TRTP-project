@@ -298,7 +298,7 @@ void free_queue(){
   free(window_start);
   free(window_end);
   free(head);
-  free(file_descriptors);
+  //free(file_descriptors);
 }
 
 
