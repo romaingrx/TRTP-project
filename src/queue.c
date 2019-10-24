@@ -53,6 +53,10 @@ node_t** head;
 //Frees the packet afterwards
 void data_ind(pkt_t *pkt, int connection){
 
+  if(file_descriptors[connection] == -1){
+      if(openFile(i) == -1){return -1;}
+  }
+
   if(log_out){
   printf("Successfully recieved data on connection %d, number: %d\n",connection,pkt->SEQNUM);
   printf("PAYLOAD %s\n", pkt_get_payload(pkt));}
@@ -137,7 +141,7 @@ int init_queue(int n){
   // printf("DATA DATA DATA %d\n", file_descriptors[0]);
 
   for(int i=0; i<n; i++){
-    if(openFile(0) == -1){return -1;}
+    file_descriptors[i] = -1;
     windowsize[i]=4; //Should be changed by program
     lastackn[i]=-1;
     lastackt[i]=0;
@@ -210,7 +214,6 @@ int add_queue(){
 
 
     int i = oldn;
-    if(openFile(i) == -1){return -1;}
     windowsize[i]=4; //Should be changed by program
     lastackn[i]=-1;
     lastackt[i]=0;
@@ -295,7 +298,10 @@ void free_queue(){
   free(window_start);
   free(window_end);
   free(head);
+  free(file_descriptors);
 }
+
+
 void next_inc(int connection){
   if(next[connection] < pow(2,n_bits_encode_window)-1){
   next[connection]++;
@@ -528,7 +534,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
 int openFile(int i){
     char filename[len_format];
     sprintf(filename, format, nb_file);
-    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0777);
+    int filefd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 00777);
     if(filefd == -1){fprintf(stderr, "[openFile] : %s\n", strerror(errno)); exit(EXIT_FAILURE);}
     if(log_out)printf("Nouveau file descriptor : %d\n", filefd);
     file_descriptors[i] = filefd;
