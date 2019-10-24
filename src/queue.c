@@ -383,7 +383,7 @@ int rearange_tabs(int connection){
     }
     if(clients_known > 1){
         for (size_t i = connection; i < clients_known-1; i++) {
-            //file_descriptors[i] = file_descriptors[i+1];
+            file_descriptors[i] = file_descriptors[i+1];
             windowsize[i] = windowsize[i+1];
             lastackn[i] = lastackn[i+1];
             lastackt[i] = lastackt[i+1];
@@ -394,7 +394,7 @@ int rearange_tabs(int connection){
 	    clients[i] = clients[i+1];
         }
         if ((realloc(windowsize, clients_known-1)==NULL) ||
-            //(realloc(file_descriptors, clients_known-1)==NULL) ||
+            (realloc(file_descriptors, clients_known-1)==NULL) ||
             (realloc(lastackn, clients_known-1)==NULL) ||
             (realloc(lastackt, clients_known-1)==NULL) ||
             (realloc(next, clients_known-1)==NULL) ||
@@ -413,8 +413,8 @@ int rearange_tabs(int connection){
         free(window_start);
         free(window_end);
         free(head);
-	free(clients);
-        //free(file_descriptors);
+	    free(clients);
+        free(file_descriptors);
         init_queue(1);
 
     }
