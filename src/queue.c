@@ -54,7 +54,7 @@ node_t** head;
 void data_ind(pkt_t *pkt, int connection){
 
   if(file_descriptors[connection] == -1){
-      if(openFile(i) == -1){return -1;}
+      if(openFile(connection) == -1){return;}
   }
 
   if(log_out){
