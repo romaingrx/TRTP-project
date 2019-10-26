@@ -94,8 +94,9 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   return 0;
 }
 
-int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format){
+int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format, int boolean_window){
     n_connections = nombremaxdeconnections;
+    adapt_window = boolean_window;
     if(n_connections == -1){ //Pas de maximum!
         MAX = false;
         n_connections=1;

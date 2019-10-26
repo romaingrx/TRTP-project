@@ -2,7 +2,7 @@
 
 
 
-int socket_listening(char* hostname, int port, int n_connections, char * main_format);
+int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format, int boolean_window);
 
 int new_client();
 

@@ -17,6 +17,7 @@ extern bool MAX;
 extern char * format;
 extern int len_format;
 extern int nb_file;
+extern int adapt_window; //1 adapts window, 0 doesn't. Adapting according to transmission errors
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);

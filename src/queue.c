@@ -13,7 +13,6 @@
 #include <stdbool.h>
 
 int log_out = 1; //Makes the program log to stdout
-int adapt_window = 1; //1 adapts window, 0 doesn't. Adapting according to transmission errors
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -26,6 +25,7 @@ char * format = NULL;
 bool MAX = true;
 int len_format = 0;
 int nb_file = 0;
+int adapt_window;
 
 
 
