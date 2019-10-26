@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     }
 
     int opt;
-    while ((opt = getopt(argc, argv, "f:o:m:w:")) != -1) {
+    while ((opt = getopt(argc, argv, "f:o:m:w")) != -1) {
         switch (opt) {
             case 'f':
                 fprintf(stderr, "[main] Le serveur ne prend pas -f comme argument.\n");
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
                 //printf("Connections : %d\n", connections);
                 break;
             case 'w':
-                boolean_window = atoi(optarg);
+                boolean_window = 1;
                 break;
             case '?':
                 fprintf(stderr, "Argument invalide \n");
