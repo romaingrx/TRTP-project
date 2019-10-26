@@ -16,6 +16,8 @@ extern int n_connections; //Nombre maximal de connections
 extern bool MAX;
 extern char * format;
 extern int len_format;
+extern int nb_file;
+extern int adapt_window; //1 adapts window, 0 doesn't. Adapting according to transmission errors
 // Prend un paquet et une connection en argument et les Renvoie au def
 // dans un buffer qui devra en faire un fichier
 void data_ind(pkt_t *pkt, int connection);
@@ -112,7 +114,7 @@ void window_inc(int connection);
  * @return : -1 si une erreur survient
  *           sinon 0
  */
-int openFile();
+int openFile(int i);
 
 /*
  * Ferme le file descriptor correspondant à l'indice du client.
@@ -120,3 +122,9 @@ int openFile();
  *           sinon 0
  */
 int closeFiles();
+
+/*
+ * Réarrange tous les tableaux.
+ * @return : 0
+ */
+int rearange_tabs(int connection);

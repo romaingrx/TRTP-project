@@ -14,14 +14,45 @@
 #include <netdb.h> // addrinfo
 #include <unistd.h>
 #include <fcntl.h>
+#define LEN 5
+
+
 void test_decode_header();
 void test_decode_all();
 void test_encode();
 void test_pointer_struct();
 void write_packet(int seqnum, char * payload);
 
+int * tab = NULL;
+int clients_known = 0;
+
+int rearange(int connection){
+    if (clients_known>1) {
+        for (size_t i = connection; i < clients_known-1; i++) {
+            tab[i] = tab[i+1];
+        }
+        if(realloc(tab, clients_known-1) == NULL){
+            return -1;
+        }
+    } else {
+        free(tab);
+        tab = malloc(sizeof(int)*1);
+    }
+    clients_known--;
+    return 0;
+}
+
 int main(int argc, char const *argv[]) {
-  socket_listening(NULL, 8555, 1, "Coucou %d.txt");
+  //socket_listening(NULL, 8555, 1, "Coucou %d.txt");
+  tab = malloc(sizeof(int)*LEN);
+  for (size_t i = 0; i < LEN; i++) {
+      tab[i] = i;
+      clients_known ++;
+  }
+  for (size_t i = 0; i < clients_known; i++) {
+      printf("%d ", tab[i]);
+  }
+  printf("\n");
 
   return 0;
 }

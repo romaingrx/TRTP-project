@@ -34,7 +34,7 @@ fd_set readfds;
 
 void free_receive(){
     if(file_descriptors != NULL){free(file_descriptors);}
-    if(clients != NULL){free(clients);}
+    //if(clients != NULL){free(clients);} plus nécessaire vu que rearrange_tabs le fait
 }
 
 int create_master_socket(int * master_socket, char * hostname, int port, int * addrlen){
@@ -57,7 +57,7 @@ int create_master_socket(int * master_socket, char * hostname, int port, int * a
 
 
 int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
-  if(clients == NULL){
+  if(clients_known ==0){
     clients_known = 1;
     clients = malloc(sizeof(struct sockaddr_in6));
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
@@ -72,7 +72,7 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
     inet_ntop(AF_INET6,&address.sin6_addr, adr2, INET6_ADDRSTRLEN);
     if(strcmp(adr1,adr2)==0){
       //Ici on a recu le message buffer du client indice i;
-      if(log_out) printf("Received message from client %d:::%s\n",  i, buffer);
+      // if(log_out) printf("Received message from client %d:::%s\n",  i, buffer);
       if(treat_bytestream(buffer, 1024, i) ==2){
         //Treats bytestream. If it returns 2, this was the last message of the connection.
         //I can thus remove this client_known.
@@ -94,14 +94,15 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   return 0;
 }
 
-int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format){
+int socket_listening(char* hostname, int port, int nombremaxdeconnections, char * main_format, int boolean_window){
     n_connections = nombremaxdeconnections;
+    adapt_window = boolean_window;
     if(n_connections == -1){ //Pas de maximum!
         MAX = false;
         n_connections=1;
     }else MAX=true;
-    init_queue(1); //Initialise with 1
     format = main_format;
+    init_queue(1); //Initialise with 1
     len_format = strlen(format) + 4;
     clients_known = 0;
     int addrlen;
@@ -117,7 +118,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
   //WHILE LOOP
   do
    {
-
+      struct timeval tv = {20, 0}; //Timeout of 20 seconds
       memset(&buffer, 0, 1024);
        //clear the socket set
        FD_ZERO(&readfds);
@@ -125,8 +126,9 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
        FD_SET(master_socket, &readfds);
        int max_sd = master_socket;
 
-       int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
-
+       int activity = select( max_sd + 1 , &readfds , NULL , NULL , &tv);
+       // if(activity == 0 && clients_known==0)break;
+       if(activity == 0)break;
        if ((activity < 0) && (errno!=EINTR))
        {
            printf("select error");
@@ -143,7 +145,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
              fprintf(stderr, "[SOCKET LISTENING] recvfrom: %s\n", strerror(errno));
            }
            treat_message_from(newaddress, buffer, 1024);
-           if(log_out)           printf("Received: %s\n", buffer);
+           // if(log_out)           printf("Received: %s\n", buffer);
 
 
 
@@ -156,9 +158,10 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
            //     printf("Send error: %s\n",strerror(errno));
            // }
 
-
+           if(log_out){printf("Clients known: %d \n", clients_known);}
        }
- }while(clients_known > 0);
+ }while(1);
+ if(log_out)printf("Timeout, ending program\n");
  free_receive();
  free_queue();
  closeFiles();
