@@ -5,8 +5,10 @@
 #include <math.h>
 #include <unistd.h> // write, close
 #include <stdbool.h>
+#include<time.h>
+#include <sys/time.h>
 
-
+extern struct timeval start, stop;
 extern int master_socket;
 extern struct sockaddr_in6* clients;
 extern int * file_descriptors;

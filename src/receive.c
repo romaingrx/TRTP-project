@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include<time.h>
+#include <sys/time.h>
 // #include <sys/types.h>
 // #include <sys/stat.h>
 #include <string.h> // memset
@@ -110,11 +112,12 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
     if(log_out){printf("Socket listening\n");}
 
 
+
   if (create_master_socket(&master_socket, hostname, port, &addrlen) == -1){
       fprintf(stderr, "Create master socket failed: %s\n", strerror(errno));
       return -1;}
 
-
+      int hahaha = 0;
   //WHILE LOOP
   do
    {
@@ -128,6 +131,11 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
 
        int activity = select( max_sd + 1 , &readfds , NULL , NULL , &tv);
        // if(activity == 0 && clients_known==0)break;
+       if(hahaha == 0){
+         gettimeofday(&start, NULL);
+         hahaha = 420;
+       }
+
        if(activity == 0)break;
        if ((activity < 0) && (errno!=EINTR))
        {

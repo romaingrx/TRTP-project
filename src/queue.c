@@ -11,9 +11,12 @@
 #include <unistd.h>//read()
 #include <fcntl.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 int log_out = 1; //Makes the program log to stdout
 
+
+struct timeval start, stop;
 //Global, extern variables:
 int master_socket; //The socket for receiving
 struct sockaddr_in6* clients; //Saves the IP adresses of known clients
@@ -523,7 +526,11 @@ int data_req(pkt_t* pkt, int connection){
       send_ack(pkt_get_seqnum(pkt), pkt_get_timestamp(pkt), connection, PTYPE_ACK);
       pkt_del(pkt);
       rearange_tabs(connection);
-      return 2;
+
+      gettimeofday(&stop, NULL);
+      double secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+      printf("time taken %f\n",secs);
+        return 2;
 
     }
     //If the packet is in sequence
