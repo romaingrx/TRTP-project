@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 int log_out = 1; //Makes the program log to stdout
+int adapt_window = 1; //1 adapts window, 0 doesn't. Adapting according to transmission errors
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -25,6 +26,8 @@ char * format = NULL;
 bool MAX = true;
 int len_format = 0;
 int nb_file = 0;
+
+
 
 int get_nconnections(){
   return n_connections;
@@ -47,7 +50,40 @@ int* window_end=NULL;
 node_t** head;
 
 
+int invalid_packets = 0;
 
+void got_invalid(int connection){
+  if(!adapt_window)return;
+  invalid_packets++;
+
+  if(invalid_packets > 50){
+    invalid_packets = 0;
+    windowsize[connection] = windowsize[connection]/2;
+    if(windowsize[connection] == 1){
+      windowsize[connection]=2;
+    }
+    int wend = window_start[connection] + windowsize[connection];
+    wend = wend%255;
+    window_end[connection] = wend;
+    if(log_out)printf("WINDOW ADAPT -- : [%d,%d]\n", window_start[connection], window_end[connection]);
+  }
+}
+void got_valid(int connection){
+  if(!adapt_window)return;
+  invalid_packets--;
+
+  if(invalid_packets < 1){
+    invalid_packets = 0;
+    windowsize[connection] = windowsize[connection]*2;
+    if(windowsize[connection] > 30){
+      windowsize[connection]=30;
+    }
+    int wend = window_start[connection] + windowsize[connection];
+    wend = wend%255;
+    window_end[connection] = wend;
+    if(log_out)printf("WINDOW ADAPT++: [%d,%d]\n", window_start[connection], window_end[connection]);
+  }
+}
 //Call this function, by giving it a malloc'd packet and a connection Number
 //This function will write the payload to the file descriptor associated to the connection indice
 //Frees the packet afterwards
@@ -73,7 +109,7 @@ void data_ind(pkt_t *pkt, int connection){
 
 //This function initialises a connection and all its variables
 int define_connection(int con_indice){
-  int window_size = 16; //default
+  int window_size = 30; //default
   windowsize[con_indice] = window_size;
   lastackn[con_indice]=-1;
   lastackt[con_indice]=0;
@@ -440,6 +476,7 @@ int data_req(pkt_t* pkt, int connection){
   //If packet was tronqued
   if(pkt->TR==1){
     send_ack(pkt->SEQNUM, pkt->TIMESTAMP,connection, PTYPE_NACK);
+    got_invalid(connection);
   }
   //If variable window size
   // if(pkt->WINDOW != windowsize[connection]){
@@ -451,6 +488,7 @@ int data_req(pkt_t* pkt, int connection){
   //Checking if packet is in the receiving window.
   int n = pkt->SEQNUM;
   if(window_start[connection] < window_end[connection]){
+    got_invalid(connection);
     if(n < window_start[connection] || n > window_end[connection]){
       //Packet not inside window, ignore it
       if(log_out){
@@ -459,7 +497,9 @@ int data_req(pkt_t* pkt, int connection){
       return 0;
     }
   }
+
   if(window_start[connection] > window_end[connection]){
+      got_invalid(connection);
     if(pkt->SEQNUM > window_start[connection] || pkt->SEQNUM < window_end[connection]){
       //Packet not inside window, ignore it
       if(log_out)printf("Out of window packet 2 %d \n", pkt->SEQNUM);
@@ -470,7 +510,7 @@ int data_req(pkt_t* pkt, int connection){
 
 
 
-
+  got_valid(connection);
   if(n == next[connection]){
     if(pkt->TR == 0 && pkt->TYPE == PTYPE_DATA && pkt->LENGTH == 0){
       //If entering here, it means this packet was the very last one of the file.
@@ -507,6 +547,7 @@ int data_req(pkt_t* pkt, int connection){
     return 0;
   }
   else{
+    got_invalid(connection);
     //if the packet is out of sequence BUT inside the recieving window:
     //add it to buffer
     if(head[connection] != NULL){
@@ -534,6 +575,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
         send_ack(lastackn[connection],lastackt[connection] ,connection, PTYPE_ACK);
         if(log_out){
         printf("Packet number %d invalid: %d\n",packet->SEQNUM,status);}
+        got_invalid(connection);
         return status;
   }
 
