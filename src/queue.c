@@ -404,6 +404,9 @@ void send_ack(uint8_t n, uint32_t temps,int connection, ptypes_t type){
 
   size_t len = 1024;
   char* donnees = malloc(sizeof(char)*len);
+  if(donnees == NULL){
+    fprintf(stderr, "Malloc erreur generating ack packet\n");
+  }
   pkt_encode(ackpacket, donnees, &len); //always returns PKT_OK
 
   //TODO: Envoyer donnees via sockets, mais faut la socket et

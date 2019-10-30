@@ -60,6 +60,9 @@ int treat_message_from(struct sockaddr_in6 address, char* buffer, int bufsize){
   if(clients_known ==0){
     clients_known = 1;
     clients = malloc(sizeof(struct sockaddr_in6));
+    if(clients == NULL){
+      fprintf(stderr, "Malloc erreur treat_message_from\n");
+    }
     memcpy(&clients[0], &address, sizeof(struct sockaddr_in6));
     if(log_out){
     printf("Added client 0\n");}
