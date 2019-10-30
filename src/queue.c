@@ -335,7 +335,6 @@ void free_queue(){
   free(window_start);
   free(window_end);
   free(head);
-  //free(file_descriptors);
 }
 
 
@@ -577,6 +576,7 @@ pkt_status_code treat_bytestream(char* data, size_t len, int connection){
         if(log_out){
         printf("Packet number %d invalid: %d\n",packet->SEQNUM,status);}
         got_invalid(connection);
+        pkt_del(packet);
         return status;
   }
 
