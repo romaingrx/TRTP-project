@@ -15,12 +15,14 @@ void test_varuint_decode_encode();
 char* test_encode();
 void test_decode(char* buf);
 void test_queue();
+void testdeben();
 
 
 int main(int argc, char const *argv[]) {
     char* buf = test_encode();
     test_decode(buf);
     test_varuint_decode_encode();
+    testdeben();
     // test_queue();
     return 0;
 }
@@ -33,14 +35,55 @@ void test_varuint_decode_encode(){
     data_decode[0] = 0b10001110;
     data_decode[1] = 0b100011;
     err  = varuint_decode(data_decode, bytes, &retval);
+    if(err<0)exit(-1);
     uint8_t *data_encode = malloc(bytes);
     err = varuint_encode(retval, data_encode, bytes);
+    if(err<0)exit(-1);
     printf("Data encodé en Network Byte Order avant le décodage :\n");
     printf("      data_decode[0] = %u | data_decode[1] = %u \n",data_decode[0], data_decode[1]);
     printf("Valeur stockée dans le data_decode : %u \n",retval);
     printf("Data encodé en Network Byte Order après l'encodage: \n");
     printf("      data_encode[0] = %u | data_encode[1] = %u \n",data_encode[0], data_encode[1]);
     free(data_decode); free(data_encode);
+}
+
+void testdeben(){
+  printf("\n\n ============================\n\n TEST DU BUFFER \n\n");
+  // pkt_status_code status ;
+  pkt_t *pkt = pkt_new();
+  pkt->TYPE = 0b01;
+  pkt->TR = 0;
+  pkt->WINDOW = 12;
+  pkt->L = 0;
+  pkt->LENGTH = 30;
+  pkt->SEQNUM = 3;
+  pkt->TIMESTAMP = 66;
+  // char* data = "ALLUMER LE FEU";
+  // pkt_set_payload(pkt, data, pkt->LENGTH);
+
+  init_queue(1);
+  printf("Adding packet number %d to the buffer.\n", pkt->SEQNUM);
+  buffer_add(pkt, 0);
+
+  // pkt_status_code status ;
+  pkt_t *pkt2 = pkt_new();
+  pkt2->TYPE = 0b01;
+  pkt2->TR = 0;
+  pkt2->WINDOW = 12;
+  pkt2->L = 0;
+  pkt2->LENGTH = 30;
+  pkt2->SEQNUM = 2;
+  pkt2->TIMESTAMP = 66;
+  // char* data = "ALLUMER LE FEU";
+  // pkt_set_payload(pkt2, data, pkt->LENGTH);
+  printf("Adding packet number %d to the buffer.\n", pkt2->SEQNUM);
+  buffer_add(pkt2, 0);
+
+  printf("First packet on buffer: %d\n", buffer_peak(0)->SEQNUM);
+  buffer_remove(0);
+  printf("First packet on buffer: %d\n\n\n\n", buffer_peak(0)->SEQNUM);
+  buffer_remove(0);
+  free_queue();
 }
 
 char* test_encode(){
@@ -59,6 +102,7 @@ char* test_encode(){
     size_t len = 128;
     char *buf = malloc(len);
     status = pkt_encode(pkt, buf, &len);
+    if(status<0)exit(-1);
     printf("-------------------------------------\n");
     printf("------------- Encodage --------------\n");
     printf("-------------------------------------\n");
@@ -79,6 +123,7 @@ void test_decode(char* buf){
     pkt_status_code status ;
     pkt_t *pktd = pkt_new();
     status = pkt_decode(buf, 128, pktd);
+    if(status<0)exit(-1);
     printf("-------------------------------------\n");
     printf("------------- Decodage --------------\n");
     printf("-------------------------------------\n");
