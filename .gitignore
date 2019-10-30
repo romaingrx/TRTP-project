@@ -7,6 +7,5 @@ src/sender
 inginious\ tasks
 *.o
 *.out
-test
 src/practice.c
 receiver
