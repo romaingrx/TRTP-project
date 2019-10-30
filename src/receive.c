@@ -118,7 +118,7 @@ int socket_listening(char* hostname, int port, int nombremaxdeconnections, char 
   //WHILE LOOP
   do
    {
-      struct timeval tv = {20, 0}; //Timeout of 20 seconds
+      struct timeval tv = {timeout, 0}; //Timeout of 20 seconds
       memset(&buffer, 0, 1024);
        //clear the socket set
        FD_ZERO(&readfds);

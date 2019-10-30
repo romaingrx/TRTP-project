@@ -22,7 +22,8 @@ int main(int argc, char **argv)
 {
     char *hostname = NULL, *format = NULL;
     int connections = -1, port, boolean_window = 0;
-
+    timeout = 20;//Défini au cas ou. :P
+    log_out = 0;
     if (argc < 3) {
         printf("Need at least the hostname and the port.\n");
         fprintf(stderr, "[main] Pas reçu assez d'arguments (hostanme et port).\n");
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
     }
 
     int opt;
-    while ((opt = getopt(argc, argv, "f:o:m:w")) != -1) {
+    while ((opt = getopt(argc, argv, "f:o:m:t:lw")) != -1) {
         switch (opt) {
             case 'f':
                 fprintf(stderr, "[main] Le serveur ne prend pas -f comme argument.\n");
@@ -43,8 +44,15 @@ int main(int argc, char **argv)
                 connections = atoi(optarg);
                 //printf("Connections : %d\n", connections);
                 break;
+            case 't':
+                timeout = atoi(optarg);
+                // printf("Timeout %d \n", timeout);
+                break;
             case 'w':
                 boolean_window = 1;
+                break;
+            case 'l':
+                log_out = 1;
                 break;
             case '?':
                 fprintf(stderr, "Argument invalide \n");

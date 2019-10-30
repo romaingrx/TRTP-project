@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-int log_out = 1; //Makes the program log to stdout
+int log_out; //Makes the program log to stdout
 
 //Global, extern variables:
 int master_socket; //The socket for receiving
@@ -26,6 +26,7 @@ bool MAX = true;
 int len_format = 0;
 int nb_file = 0;
 int adapt_window;
+int timeout;
 
 
 

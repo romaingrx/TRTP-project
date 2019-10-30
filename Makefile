@@ -27,6 +27,7 @@ COMP = @gcc
 FLAGS = -lz -lm
 WFLAGS = -Werror -Wall -std=c99
 
+.PHONY : clean o_clean exec_clean
 
 
 default : $(EXEC_MAIN)
