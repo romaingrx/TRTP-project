@@ -84,6 +84,8 @@ void testdeben(){
   printf("First packet on buffer: %d\n\n\n\n", buffer_peak(0)->SEQNUM);
   buffer_remove(0);
   free_queue();
+  free(pkt);
+  free(pkt2);
 }
 
 char* test_encode(){
@@ -114,6 +116,7 @@ char* test_encode(){
     char *text = malloc(27);
     memcpy(text, &buf[11], 27);
     printf("DATA : \t\t%s\n\n", text);
+    free(buf);
     free(text);
 
     return buf;
@@ -137,6 +140,7 @@ void test_decode(char* buf){
     // printf("Crc1 decode \t: %u\n",pkt_get_crc1(pktd));
     printf("Payload : \t%s\n\n",pkt_get_payload(pktd));
     // printf("Crc2 decode \t: %u\n",pkt_get_crc2(pktd));
+    pkt_del(pktd);
 }
 
 
