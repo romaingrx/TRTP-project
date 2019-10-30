@@ -1,7 +1,6 @@
 Linksimulator-master
 TODO-Experimental.md
 ex
-test
 main
 practice
 src/sender
@@ -9,5 +8,5 @@ inginious\ tasks
 *.o
 *.out
 test
-test.c
 src/practice.c
+receiver
