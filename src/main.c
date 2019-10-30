@@ -24,12 +24,6 @@ int main(int argc, char **argv)
     int connections = -1, port, boolean_window = 0;
     timeout = 20;//Défini au cas ou. :P
     log_out = 0;
-    if (argc < 3) {
-        printf("Need at least the hostname and the port.\n");
-        fprintf(stderr, "[main] Pas reçu assez d'arguments (hostanme et port).\n");
-        return EXIT_SUCCESS; // A CHANGER EN EXIT_FAILURE
-    }
-
     int opt;
     while ((opt = getopt(argc, argv, "f:o:m:t:lw")) != -1) {
         switch (opt) {
@@ -38,15 +32,12 @@ int main(int argc, char **argv)
                 break;
             case 'o':
                 format = optarg;
-                //printf("FORMAT : %s\n", format);
                 break;
             case 'm':
                 connections = atoi(optarg);
-                //printf("Connections : %d\n", connections);
                 break;
             case 't':
                 timeout = atoi(optarg);
-                // printf("Timeout %d \n", timeout);
                 break;
             case 'w':
                 boolean_window = 1;
@@ -55,18 +46,20 @@ int main(int argc, char **argv)
                 log_out = 1;
                 break;
             case '?':
-                fprintf(stderr, "Argument invalide \n");
+                fprintf(stderr, "Argument invalide : %s\n", argv[optind-1]);
         }
     }
     if(format == NULL){
         format = "File %d.txt";
     }
+    if(argc-optind < 2){
+        fprintf(stderr, "[main] Pas reçu assez d'arguments (hostanme et port).\n");
+        exit(EXIT_FAILURE);
+    }
 
     hostname = argv[optind];
     port = (int)atoi(argv[optind+1]);
 
-    // printf("HOSTNAME : %s\n", hostname);
-    // printf("PORT : %d\n", port);
     socket_listening(hostname, port, connections, format, boolean_window);
     return 0;
 }

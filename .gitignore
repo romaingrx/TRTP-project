@@ -9,3 +9,5 @@ inginious\ tasks
 *.out
 src/practice.c
 receiver
+sender
+test

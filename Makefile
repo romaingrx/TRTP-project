@@ -21,7 +21,7 @@ EXEC_MAIN     = receiver
 EXEC_TESTS    = test
 
 ERR_FILE = src/stderr.txt
-VAR = "192.168.1.5 7903"
+VAR = ":: 8555"
 
 COMP = @gcc
 FLAGS = -lz -lm
